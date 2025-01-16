@@ -39,6 +39,9 @@ public struct PassportModel{
     public var profession:String?
     public var title:String?
     public var personelSummary:String?
+    
+    // DG12
+    
 
     
 }
