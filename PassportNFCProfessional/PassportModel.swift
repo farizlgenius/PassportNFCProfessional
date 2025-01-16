@@ -41,7 +41,13 @@ public struct PassportModel{
     public var personelSummary:String?
     
     // DG12
-    
+    public var issuingAuthority:String?
+    public var dateOfIssue:String?
+    public var endorsements:String?
+    public var imageOfFrontDoc:String?
+    public var imageOfRearDoc:String?
+    public var dateTimeDocPersonalization:String?
+    public var serialNumberDocPersonalizationSystem:String?
 
     
 }

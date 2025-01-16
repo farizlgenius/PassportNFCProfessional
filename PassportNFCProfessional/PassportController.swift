@@ -532,157 +532,7 @@ public class PassportController
         } // Init Card Session
         
     }
-    
-    
-    
-    // MARK: - DG1 DATA MANAGEMENT
-    func CalculateLenDG1(APDU:String,SKenc:String)->String{
-        var result = APDU.dropFirst(6)
-        result = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!)
-        result = (util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(2))!
-        let index = result.count - (util?.FindIndexOf(inputString: String(result), target: "5F1F"))!
-        let length = result.dropLast(index)
-        return String(length)
-    }
-    
-    func GetDataDG1(APDU:String,SKenc:String)->String{
-        //let result = APDU.dropFirst(6).uppercased()
-        let result = getDataFromDO87(in: APDU).uppercased()
-        var result2:Substring = ""
-        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
-            result2 = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!)
-        }else{
-            result2 = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!)
-        }
-        let result3 = util?.TripleDesDecCBC(input: String(result2), key: SKenc)
-        //print("LIB >>>> DG1 HEX : " + result3!.dropLast(16))
-        let result4 = trimTrailing80(from: result3!)
-        return (util?.hexStringtoAscii(result4))!
-    }
-    
-    
-    // MARK: - DG2 DATA MANAGEMENT
-    func CalculateLenDG2(APDU:String,SKenc:String)->[String]{
-        var result = APDU.dropFirst(6)
-        result = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!)
-        //print("result 1 : " + result)
-        let encResult = util?.TripleDesDecCBC(input: String(result), key: SKenc)
-        print("LIB >>>>  CALCULATE DG2 LEN ENC RESULT : " + encResult!)
-        // Calculate length of header in biometric template
-        let offsetIndex1 = util?.FindIndexOf(inputString: String(encResult!), target: "7F61")
-        let offsetIndex2 = encResult!.count - offsetIndex1!
-        let offsetValue1 = encResult!.dropLast(offsetIndex2).dropFirst(4)
-        let diffValue = UInt32(offsetValue1,radix: 16)! + 4
-        let diffValueStr = String(format:"%X",diffValue)
-        var offsetIndex3 = util?.FindIndexOf(inputString: String(encResult!), target: "5F2E")
-        if offsetIndex3 == -1 {
-            offsetIndex3 = util?.FindIndexOf(inputString: String(encResult!), target: "7F2E")
-        }
-        var offsetValue2 = encResult!.dropFirst(offsetIndex3! + 6)
-        offsetValue2 = offsetValue2.dropLast(offsetValue2.count - 4)
-        let offsetValue = UInt64(diffValueStr,radix: 16)! - UInt64(offsetValue2,radix: 16)!
-        let offset = String(format:"%X",offsetValue)
-//        let offsetValue2Diff = UInt32(offsetValue2,radix: 16)! + 2
-//        let len = String(format: "%X", offsetValue2Diff)
-        let len = offsetValue2
-        return [String(len),offset]
-    }
-    
-    
-    
-    func GetDataDG2(APDU:String,SKenc:String)->String{
-        //var result = APDU.dropFirst(10)//.dropFirst(10)
-        var result = getDataFromDO87(in: APDU).uppercased()
-        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
-            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
-        }else{
-            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
-        }
-        let result1 = (util?.TripleDesDecCBC(input: String(result), key: SKenc))!
-        print("LIB >>>> GET DATA DG2 ENC : ")
-        print(result1)
-        //.dropFirst(92)
-        return result1
-    }
-    
-    func GetRemainDataDG2(APDU:String,SKenc:String)->String{
-        var result = APDU.dropFirst(10)
-        var result1:String
-        if util?.FindIndexOf(inputString: String(result), target: "990290008e") == -1 {
-            result = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990262828e"))!)
-            result = (util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!
-            print("LIB >>>> DECRYPT BEFORE DROP : ")
-            print(result)
-            //result = result.dropLast(10)
-            result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
-            print("LIB >>>> DECRYPT RESULT : ")
-            print(result1)
-        }else{
-            result = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990290008e"))!)
-            result = (util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!
-            print("LIB >>>> DECRYPT BEFORE DROP : ")
-            print(result)
-            //result = result.dropLast(2)
-            result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
-            print("LIB >>>> DECRYPT RESULT : ")
-            print(result1)
-        }
-        return result1
-    }
-    
-    func trimHexStringToLength(hexString: String, targetLength: Int) -> String {
 
-        if hexString.count <= targetLength {
-            return hexString // คืนค่าถ้าความยาวไม่เกินเป้าหมาย
-        }
-
-        let trimmedString = String(hexString.prefix(targetLength))
-        return trimmedString
-    }
-    
-    
-  
-    // MARK: - DG11 DATA MANAGEMENT
-    
-    func GetDataDG11(APDU:String,SKenc:String)->String{
-        //var result = APDU.dropFirst(6)
-        //var result = APDU.dropFirst(8)
-        var result = getDataFromDO87(in: APDU).uppercased()
-        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
-            if util?.FindIndexOf(inputString: String(result), target: "99026282") == -1 {
-                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99027001"))!))
-            }else{
-                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
-            }
-        }
-        else{
-            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
-        }
-        result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
-    
-        return String(result)
-    }
-    
-    // MARK: - DG12 DATA MANAGEMENT
-    
-    func GetDataDG12(APDU:String,SKenc:String)->String{
-        //var result = APDU.dropFirst(6)
-        //var result = APDU.dropFirst(8)
-        var result = getDataFromDO87(in: APDU).uppercased()
-        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
-            if util?.FindIndexOf(inputString: String(result), target: "99026282") == -1 {
-                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99027001"))!))
-            }else{
-                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
-            }
-        }
-        else{
-            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
-        }
-        result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
-    
-        return String(result)
-    }
     
     // MARK: - Utility Data Management
     
@@ -971,17 +821,50 @@ public class PassportController
                     data2 = data2.dropFirst(1)
                     data?.nationality = countryCodes[String(data2.prefix(3))]
                     data2 = data2.dropFirst(3)
-                    data?.dateOfBirth = String(data2.prefix(6))
+                    //data?.dateOfBirth = String(data2.prefix(6))
+                    let birthDate = String(data2.prefix(6))
                     data2 = data2.dropFirst(6)
                     data?.dateOfBirthCheckDigit = String(data2.prefix(1))
                     data2 = data2.dropFirst(1)
                     data?.sex = String(data2.prefix(1))
                     data2 = data2.dropFirst(1)
-                    data?.dateOfExpiry = String(data2.prefix(6))
+                    //data?.dateOfExpiry = String(data2.prefix(6))
+                    let expireDate = String(data2.prefix(6))
                     data2 = data2.dropFirst(6)
                     data?.dateOfExpiryCheckDigit = String(data1.prefix(1))
                     data2 = data2.dropFirst(1)
                     data?.optionalData = String(data2.dropLast(3))
+                    
+                    // calculate date of birth reference from ICAO Standard
+                    /*
+                     If Birth Date > Current Year = 19
+                     If Birth Date <= Current  Yera = 20
+                     */
+                    let currentYear = Calendar(identifier: .gregorian).component(.year, from: Date())
+                    if Int(birthDate.prefix(2))! > (currentYear % 100) {
+                        data?.dateOfBirth = "19" + birthDate
+                    }else{
+                        data?.dateOfBirth = "20" + birthDate
+                    }
+                    
+                    // calculate date of expire reference from ICAO Standard
+                    if let d = data?.dateOfIssue,data?.dateOfIssue != "" {
+                        let issueYear = Int((d.prefix(4).dropFirst(2)))
+                        let exYear = Int(expireDate.prefix(2))
+                        if abs(issueYear! - exYear!) <= 10  {
+                            data?.dateOfExpiry = "20" + expireDate
+                        }else{
+                            data?.dateOfExpiry = "19" + expireDate
+                        }
+                    }else{
+                        let exYear = Int(expireDate.prefix(2))
+                        if exYear! >= 40 {
+                            data?.dateOfExpiry = "19" + expireDate
+                        }else{
+                            data?.dateOfExpiry = "20" + expireDate
+                        }
+                    }
+                    
                     
                     print("\n")
                     print("Data Group 1 Data : ")
@@ -1020,6 +903,31 @@ public class PassportController
         #####################################
         
         """)
+    }
+    
+    // MARK: - DG1 DATA MANAGEMENT
+    func CalculateLenDG1(APDU:String,SKenc:String)->String{
+        var result = getDataFromDO87(in: APDU).uppercased()
+        result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(2))!)
+        let index = result.count - (util?.FindIndexOf(inputString: String(result), target: "5F1F"))!
+        let length = result.dropLast(index)
+        return String(length)
+    }
+    
+    func GetDataDG1(APDU:String,SKenc:String)->String{
+        //let result = APDU.dropFirst(6).uppercased()
+        let result = getDataFromDO87(in: APDU).uppercased()
+        var result2:Substring = ""
+        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
+            result2 = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!)
+        }else{
+            result2 = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!)
+        }
+        let result3 = util?.TripleDesDecCBC(input: String(result2), key: SKenc)
+        //print("LIB >>>> DG1 HEX : " + result3!.dropLast(16))
+        let result4 = trimTrailing80(from: result3!)
+        return (util?.hexStringtoAscii(result4))!
     }
     
     // MARK: - DATA GROUP 2
@@ -1077,15 +985,16 @@ public class PassportController
                 if verify {
                     r = GetDataDG2(APDU: res, SKenc: SKenc)
                     let allLen = (UInt32(len[0],radix: 16)! * 2) - 1000
-                    print("LIB >>>> DG2 Character Length : \(allLen)")
+                    print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
                     if r.count < allLen {
         
                         print("LIB >>>> DG2 FOUND REMAIN")
                         var re:String = ""
                         // Step 7 : Get Remain Data DG2
                         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
+                        //apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
                         //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
+                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: len[0], SSC: SSCP, SKmac: SKmac)
                         print("LIB >>>> (APDU CMD READ DG2) >>>> ")
                         res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
                         print("LIB <<<< (APDU RES READ DG2) <<<< : " + res.uppercased())
@@ -1111,7 +1020,7 @@ public class PassportController
                                 newOffset = "0" + newOffset
                             }
                             SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: String(newOffset.dropLast(2)), HexOffset: String(newOffset.dropFirst(2)), HexLength: "0384", SSC: SSCP, SKmac: SKmac)
+                            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: String(newOffset.dropLast(2)), HexOffset: String(newOffset.dropFirst(2)), HexLength: len[0], SSC: SSCP, SKmac: SKmac)
                             print("LIB >>>> (APDU CMD READ DG2) >>>> ")
                             //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
                             res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
@@ -1208,6 +1117,89 @@ public class PassportController
         
         """)
 
+    }
+    
+    // MARK: - DG2 DATA MANAGEMENT
+    func CalculateLenDG2(APDU:String,SKenc:String)->[String]{
+        //var result = APDU.dropFirst(6)
+        var result = getDataFromDO87(in: APDU).uppercased()
+        result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        //print("result 1 : " + result)
+        let encResult = util?.TripleDesDecCBC(input: String(result), key: SKenc)
+        print("LIB >>>>  CALCULATE DG2 LEN ENC RESULT : " + encResult!)
+        // Calculate length of header in biometric template
+        let offsetIndex1 = util?.FindIndexOf(inputString: String(encResult!), target: "7F61")
+        let offsetIndex2 = encResult!.count - offsetIndex1!
+        let offsetValue1 = encResult!.dropLast(offsetIndex2).dropFirst(4)
+        let diffValue = UInt32(offsetValue1,radix: 16)! + 4
+        let diffValueStr = String(format:"%X",diffValue)
+        var offsetIndex3 = util?.FindIndexOf(inputString: String(encResult!), target: "5F2E")
+        if offsetIndex3 == -1 {
+            offsetIndex3 = util?.FindIndexOf(inputString: String(encResult!), target: "7F2E")
+        }
+        var offsetValue2 = encResult!.dropFirst(offsetIndex3! + 6)
+        offsetValue2 = offsetValue2.dropLast(offsetValue2.count - 4)
+        let offsetValue = UInt64(diffValueStr,radix: 16)! - UInt64(offsetValue2,radix: 16)!
+        let offset = String(format:"%X",offsetValue)
+//        let offsetValue2Diff = UInt32(offsetValue2,radix: 16)! + 2
+//        let len = String(format: "%X", offsetValue2Diff)
+        let len = offsetValue2
+        return [String(len),offset]
+    }
+    
+    
+    
+    func GetDataDG2(APDU:String,SKenc:String)->String{
+        //var result = APDU.dropFirst(10)//.dropFirst(10)
+        var result = getDataFromDO87(in: APDU).uppercased()
+        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
+            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
+        }else{
+            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        }
+        let result1 = (util?.TripleDesDecCBC(input: String(result), key: SKenc))!
+        print("LIB >>>> GET DATA DG2 ENC : ")
+        print(result1)
+        //.dropFirst(92)
+        return result1
+    }
+    
+    func GetRemainDataDG2(APDU:String,SKenc:String)->String{
+        //var result = APDU.dropFirst(10)
+        var result = getDataFromDO87(in: APDU).uppercased()
+        var result1:String
+        if util?.FindIndexOf(inputString: String(result), target: "990290008E") == -1 {
+            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990262828E"))!))
+            result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!)
+            print("LIB >>>> DECRYPT BEFORE DROP : ")
+            print(result)
+            //result = result.dropLast(10)
+            //result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
+            result1 = trimTrailing80(from: String(result))
+            print("LIB >>>> DECRYPT RESULT : ")
+            print(result1)
+        }else{
+            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990290008E"))!))
+            result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!)
+            print("LIB >>>> DECRYPT BEFORE DROP : ")
+            print(result)
+            //result = result.dropLast(2)
+            //result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
+            result1 = trimTrailing80(from: String(result))
+            print("LIB >>>> DECRYPT RESULT : ")
+            print(result1)
+        }
+        return result1
+    }
+    
+    func trimHexStringToLength(hexString: String, targetLength: Int) -> String {
+
+        if hexString.count <= targetLength {
+            return hexString // คืนค่าถ้าความยาวไม่เกินเป้าหมาย
+        }
+
+        let trimmedString = String(hexString.prefix(targetLength))
+        return trimmedString
     }
     
     // MARK: - Data Group 3
@@ -1334,6 +1326,27 @@ public class PassportController
         
     }
     
+    // MARK: - DG11 DATA MANAGEMENT
+    
+    func GetDataDG11(APDU:String,SKenc:String)->String{
+        //var result = APDU.dropFirst(6)
+        //var result = APDU.dropFirst(8)
+        var result = getDataFromDO87(in: APDU).uppercased()
+        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
+            if util?.FindIndexOf(inputString: String(result), target: "99026282") == -1 {
+                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99027001"))!))
+            }else{
+                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
+            }
+        }
+        else{
+            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        }
+        result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
+    
+        return String(result)
+    }
+    
     // MARK: - DATA GROUP 12
     func readDG12() async {
         
@@ -1394,27 +1407,26 @@ public class PassportController
                     }else{
                         
                         // Step 5 : Read DG12
-                        let dg11 = GetDataDG11(APDU:res, SKenc: SKenc)
-                        print("LIB >>>> DG12 : " + dg11)
+                        let dg12 = GetDataDG11(APDU:res, SKenc: SKenc)
+                        print("LIB >>>> DG12 : " + dg12)
                         
                         // Step 6 : Loop for each data
-                        data?.personalNumber = SplitDataWithTags(dg: dg11, Tag: "5F10")
-                        data?.fullDateOfBirth = SplitDataWithTags(dg: dg11, Tag: "5F2B")
-                        data?.placeOfBirth = SplitDataWithTags(dg: dg11, Tag: "5F11")
-                        data?.permanentAddress = SplitDataWithTags(dg: dg11, Tag: "5F42")
-                        data?.telephone = SplitDataWithTags(dg: dg11, Tag: "5F12")
-                        data?.profession = SplitDataWithTags(dg: dg11, Tag: "5F13")
-                        data?.title = SplitDataWithTags(dg: dg11, Tag: "5F14")
-                        data?.personelSummary = SplitDataWithTags(dg: dg11, Tag: "5F15")
+                        data?.issuingAuthority = SplitDataWithTags(dg: dg12, Tag: "5F19")
+                        data?.dateOfIssue = SplitDataWithTags(dg: dg12, Tag: "5F26")
+                        data?.endorsements = SplitDataWithTags(dg: dg12, Tag: "5F1B")
+                        data?.imageOfFrontDoc = SplitDataWithTags(dg: dg12, Tag: "5F1D")
+                        data?.imageOfRearDoc = SplitDataWithTags(dg: dg12, Tag: "5F1E")
+                        data?.dateTimeDocPersonalization = SplitDataWithTags(dg: dg12, Tag: "5F55")
+                        data?.serialNumberDocPersonalizationSystem = SplitDataWithTags(dg: dg12, Tag: "5F56")
                         
                         print("\n")
                         print("Data Group 12 Data : ")
-                        print("Personal Number : \(data?.personalNumber ?? "")")
-                        print("Full Birth Date : \(data?.fullDateOfBirth ?? "")")
-                        print("Place of birth : \(data?.placeOfBirth ?? "")")
-                        print("Permanent Address : \(data?.permanentAddress ?? "")")
-                        print("Telephone : \(data?.telephone ?? "")")
-                        print("Title : \(data?.title ?? "")")
+                        print("Issuing Authority : " + (data?.issuingAuthority)!)
+                        print("Date of Issue : " + (data?.dateOfIssue)!)
+                        print("Endorsements : " + (data?.endorsements)!)
+                        print("Image Of Rear : " + ((data?.imageOfFrontDoc)!))
+                        print("Date and time of document personalized : " + (data?.dateTimeDocPersonalization)!)
+                        print("Serial Number of Personalization System " + (data?.serialNumberDocPersonalizationSystem)!)
                         print("\n")
                         
                     } // DG11 NOT FOUND
@@ -1441,10 +1453,31 @@ public class PassportController
         
     }
     
+    // MARK: - DG12 DATA MANAGEMENT
+    
+    func GetDataDG12(APDU:String,SKenc:String)->String{
+        //var result = APDU.dropFirst(6)
+        //var result = APDU.dropFirst(8)
+        var result = getDataFromDO87(in: APDU).uppercased()
+        if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
+            if util?.FindIndexOf(inputString: String(result), target: "99026282") == -1 {
+                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99027001"))!))
+            }else{
+                result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
+            }
+        }
+        else{
+            result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        }
+        result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
+    
+        return String(result)
+    }
+    
 
     
     // MARK: - START READ RFID
-    public func ReadRFIDData(documentNo:String,dob:String,doe:String,common:Bool,dg1:Bool,dg2:Bool,dg11:Bool) {
+    public func ReadRFIDData(documentNo:String,dob:String,doe:String,dg1:Bool,dg2:Bool,dg11:Bool) {
         
         
         let docnum = documentNo + getChecksum(data: documentNo)
