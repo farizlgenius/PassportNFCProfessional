@@ -364,118 +364,176 @@ public class PassportController
         self.isSmartCardInitialized = isSmartCardInitialized
     }
     
-    
-    // APDU function
-    func ConstructAPDUforSelectDF(DG:String,SKenc:String,SKmac:String,SSCP:String) -> String{
-        let CmdHead = "0CA4020C80000000"
-        let data = DG + "800000000000"
-        let EncData = self.util?.TripleDesEncCBC(input: data, key: SKenc)
-        let DO87 = "870901" + EncData!
-        let M = CmdHead + DO87
-        let N = SSCP + M + "8000000000"
-        let CC = self.util?.MessageAuthenticationCodeMethodOne(input: N, key: SKmac)
-        let DO8E = "8E08" + CC!
-        return "0CA4020C15" + DO87 + DO8E + "00"
-    }
-    
-    func VerifySelectRAPDU(APDU:String,SSC:String,Key:String)->Bool{
-        let RAPDU = APDU.dropLast(4).uppercased()
-        var DropIndex = 0
-        if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
-            DropIndex = RAPDU.count - (self.util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
-        }else{
-            DropIndex = RAPDU.count - (self.util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
-        }
-        var K = SSC + RAPDU.dropLast(DropIndex - 8) + "80"
-        while(K.count % 16 != 0){
-            K.append("00")
-        }
-        let CC = util?.MessageAuthenticationCodeMethodOne(input: K, key: Key)
-        if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
-            DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
-        }else{
-            DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
-        }
-        let DO8E = RAPDU.dropFirst(DropIndex+12)
-        if CC! == DO8E {
-            return true
-        }else{
-            return false
-        }
-    }
-    
-    func ConstructAPDUforReadBinary(HexBlock:String,HexOffset:String,HexLength:String,SSC:String,SKmac:String)->String{
-        let CmdHeader = "0CB0\(HexBlock)\(HexOffset)80000000"
-        let DO97 = "9701\(HexLength)"
-        let M = CmdHeader + DO97
-        let N = SSC + M + "8000000000"
-        let CC = self.util?.MessageAuthenticationCodeMethodOne(input: N, key: SKmac)
-        let DO8E = "8E08" + CC!
-        let ProtectedAPDU = "0CB0\(HexBlock)\(HexOffset)0D" + DO97 + DO8E + "00"
-        return ProtectedAPDU
-    }
-    
-    func ConstructAPDUforReadBinaryExtend(HexBlock:String,HexOffset:String,HexLength:String,SSC:String,SKmac:String)->String{
-        let CmdHeader = "0CB0\(HexBlock)\(HexOffset)80000000"
-        let DO97 = "9702\(HexLength)"
-        let M = CmdHeader + DO97
-        let N = SSC + M + "80000000"
-        let CC = self.util?.MessageAuthenticationCodeMethodOne(input: N, key: SKmac)
-        let DO8E = "8E08" + CC!
-        let ProtectedAPDU = "0CB0\(HexBlock)\(HexOffset)00000E" + DO97 + DO8E + "0000"
-        return ProtectedAPDU
-    }
-    
-    func VerifyReadBinaryRAPDU(APDU:String,SSC:String,Key:String)->Bool{
-        let RAPDU = APDU.dropLast(4).uppercased()
-        var DropIndex:Int = 0
-        if util?.FindIndexOf(inputString: String(RAPDU), target: "99026A828E08") != -1 {
-            return false
-        }else{
-            if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
-                if util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08") == -1 {
-                    if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
-                        return false
-                    }else{
-                        DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
-                        print(DropIndex)
-                    }
-                }else{
-                    DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
-                    print(DropIndex)
-                }
-                
-            }else{
-                DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
-                print(DropIndex)
-            }
-            
-            var K = SSC + RAPDU.dropLast(DropIndex-8) + "80"
-            while(K.count % 16 != 0){
-                K.append("00")
-            }
-            let CC = self.util?.MessageAuthenticationCodeMethodOne(input: K, key: Key)
-            if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
-                if util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08") == -1 {
-                    DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
-                    print(DropIndex)
-                }else{
-                    DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
-                    print(DropIndex)
-                }
-            }else{
-                DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
-                print(DropIndex)
-            }
-            let DO8E = RAPDU.dropFirst(DropIndex+12)
-            if CC! == DO8E {
-                return true
-            }else{
-                return false
-            }
+    //MARK: - BAC
+    func BasicAccessControl(mrz:String) async -> Bool {
+        
+        print("""
+        
+        #####################################
+          BEGIN EXTERNAL AUTHENTICATION STEP 
+        #####################################
+        
+        """)
+        
+        // MARK: - Step 1 : Hash MRZ Data with SHA1 Algorithm
+        let mrzData = mrz.data(using: .utf8)
+        let Kseed = util?.sha1HashData(data: mrzData!).prefix(32)
+        print("LIB >>>> Kseed : " + Kseed!)
+        
+        // MARK: - Step 2 / 3 : Calculate Kenc and Kmac from Kseed and adjust Parity
+        let Key1 = util?.CalculateKey(Kseed: String(Kseed!))
+        let Kenc = Key1![0]
+        let Kmac = Key1![1]
+        
+        print("LIB >>>> Kenc : " + Kenc!)
+        print("LIB >>>> Kmac : " + Kmac!)
+        
+        // MARK: - Step 4 : Initial SmartCard
+        
+
+        if isSmartCardInitialized! {
+            isCardSessionBegin = await rmngr.beginCardSession()
+            delegate?.onBeginCardSession(isSuccess: isCardSessionBegin!)
         }
         
+        if isCardSessionBegin ?? false {
+            
+            // MARK: - Step 5 : Transmit APDU for SELECT DF of Passport
+            //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
+            print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
+            var res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR2)
+            print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
+            
+            
+            if res == "nil" {
+                
+                print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
+                delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError: true)
+                print("""
+                
+                #####################################
+                              THE END !!!
+                #####################################
+                
+                """)
+                rmngr.endCardSession()
+                return false
+            }else{
+                
+                if res.suffix(2) == "6700" {
+                    
+                    // MARK: - Step 5.1 : Transmit APDU for SELECT DF of Passport
+                    //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
+                    print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
+                    res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR)
+                    print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
+                    
+                }
+                
+                // MARK: - Step 6 : Transmit Get Challenge APDU
+                //print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> : " + GETCHALLENGESTR)
+                print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> ")
+                res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: GETCHALLENGESTR)
+                print("LIB <<<< (APDU RES GET CHALLENGE) <<<< : " + res.uppercased())
+                if res.count <= 4 {
+                    print("LIB >>>> GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())")
+                    print("""
+                    
+                    #####################################
+                                  THE END !!!
+                    #####################################
+                    
+                    """)
+                    delegate?.onErrorOccur(errorMessage: "GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())",isError: true)
+                    rmngr.endCardSession()
+                    return false
+                }
+                let RNDIC = res.uppercased().dropLast(4)
+                
+                // MARK: - Step 7 : Generate random 8 byte hex and 16 byte hex
+                let Kifd = util?.RandomHex(numDigit: 32)
+                let RNDIFD = util?.RandomHex(numDigit: 16)
+                
+                // MARK: - Step 8 : Get S by concatenate RNDIFD + RNDIC + Kifd
+                let S = RNDIFD! + RNDIC + Kifd!
+                print("LIB >>>> S : " + S)
+                
+                // MARK: - Step 9 : Get Eifd by Encrypt S with Kenc by 3DES CBC Algorithm
+                let Eifd = util?.TripleDesEncCBC(input: S, key: Kenc!)
+                print("LIB >>>> Eifd : " + Eifd!)
+                
+                // MARK: - Step 10 : Get Mifd by Calculate Message Authentication Code Padding Method 2 over Eifd by Kmac
+                let Mifd = util?.MessageAuthenticationCodeMethodTwo(input: Eifd!, key: Kmac!)
+                print("LIB MSG >>>> Mifd : " + Mifd!)
+                
+                // MARK: Step 11 : Construct APDU Cmd for do External Authentication Cmd = Eifd concatinate with Mifd
+                let apdu = "0082000028" + Eifd! + Mifd! + "28"
+                
+                // MARK: - Step 12 : Send APDU command
+                //print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : " + apdu)
+                print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : ")
+                res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
+                print("LIB <<<< (APDU RES EXTERNAL AUTH) <<<< : " + res.uppercased())
+                
+                if res.count <= 4 {
+                    print("LIB >>>> EXTERNAL AUTHENTICATION UNSUCCESS")
+                    print("""
+                    
+                    #####################################
+                                  THE END !!!
+                    #####################################
+                    
+                    """)
+                    delegate?.onErrorOccur(errorMessage: "EXTERNAL AUTHENTICATION UNSUCCESS",isError: true)
+                    rmngr.endCardSession()
+                    return false
+                }
+                // MARK: - Step 13 : Get Eic by Cut Off Mic from response and decrypt Eic to get R
+                let Eic = res.uppercased().dropLast(20)
+                print("LIB >>>> Eic : " + Eic)
+                let R = util?.TripleDesDecCBC(input: String(Eic), key: Kenc!)
+                print("LIB >>>> R : " + R!)
+          
+                //MARK: - Step 14 : Get Kic and SSC from R
+                let Kic = R!.dropFirst(32)
+                print("LIB >>>> Kic : " + Kic)
+                let a = R?.dropLast(32)
+                let b = a!.dropLast(16)
+                let c = a!.dropFirst(16)
+                SSCP = String(b.dropFirst(8) + c.dropFirst(8))
+                print("LIB >>>> SSC : " + SSCP)
+          
+                // MARK: - Step 15 : Calculate KSseed by XOR Kic with Kifd
+                let SKseed = util?.XOR(Data1: String(Kic), Data2: Kifd!)
+          
+                // MARK: - Step 16 : Calculate KSenc and KSmac from SKeed
+                let SKey = util?.CalculateKey(Kseed: SKseed!)
+                SKenc = SKey![0]!
+                SKmac = SKey![1]!
+                print("LIB >>>> SKenc : " + SKenc)
+                print("LIB >>>> SKmac : " + SKmac)
+          
+                print("""
+                
+                #####################################
+                  END EXTERNAL AUTHENTICATION STEP
+                #####################################
+                
+                """)
+                return true
+                
+            } // Select DF
+            
+        }else{
+            delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: true)
+            print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
+            rmngr.endCardSession()
+            return false
+        } // Init Card Session
+        
     }
+    
+
     
     // MARK: - EF.COM Data Management
     func GetDataCOM(APDU:String,SKenc:String)->[String]{
@@ -635,6 +693,118 @@ public class PassportController
     
     // MARK: - Utility Data Management
     
+    func ConstructAPDUforSelectDF(DG:String,SKenc:String,SKmac:String,SSCP:String) -> String{
+        let CmdHead = "0CA4020C80000000"
+        let data = DG + "800000000000"
+        let EncData = self.util?.TripleDesEncCBC(input: data, key: SKenc)
+        let DO87 = "870901" + EncData!
+        let M = CmdHead + DO87
+        let N = SSCP + M + "8000000000"
+        let CC = self.util?.MessageAuthenticationCodeMethodOne(input: N, key: SKmac)
+        let DO8E = "8E08" + CC!
+        return "0CA4020C15" + DO87 + DO8E + "00"
+    }
+    
+    
+    func VerifySelectRAPDU(APDU:String,SSC:String,Key:String)->Bool{
+        let RAPDU = APDU.dropLast(4).uppercased()
+        var DropIndex = 0
+        if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
+            DropIndex = RAPDU.count - (self.util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
+        }else{
+            DropIndex = RAPDU.count - (self.util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
+        }
+        var K = SSC + RAPDU.dropLast(DropIndex - 8) + "80"
+        while(K.count % 16 != 0){
+            K.append("00")
+        }
+        let CC = util?.MessageAuthenticationCodeMethodOne(input: K, key: Key)
+        if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
+            DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
+        }else{
+            DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
+        }
+        let DO8E = RAPDU.dropFirst(DropIndex+12)
+        if CC! == DO8E {
+            return true
+        }else{
+            return false
+        }
+    }
+    
+    func ConstructAPDUforReadBinary(HexBlock:String,HexOffset:String,HexLength:String,SSC:String,SKmac:String)->String{
+        let CmdHeader = "0CB0\(HexBlock)\(HexOffset)80000000"
+        let DO97 = "9701\(HexLength)"
+        let M = CmdHeader + DO97
+        let N = SSC + M + "8000000000"
+        let CC = self.util?.MessageAuthenticationCodeMethodOne(input: N, key: SKmac)
+        let DO8E = "8E08" + CC!
+        let ProtectedAPDU = "0CB0\(HexBlock)\(HexOffset)0D" + DO97 + DO8E + "00"
+        return ProtectedAPDU
+    }
+    
+    func ConstructAPDUforReadBinaryExtend(HexBlock:String,HexOffset:String,HexLength:String,SSC:String,SKmac:String)->String{
+        let CmdHeader = "0CB0\(HexBlock)\(HexOffset)80000000"
+        let DO97 = "9702\(HexLength)"
+        let M = CmdHeader + DO97
+        let N = SSC + M + "80000000"
+        let CC = self.util?.MessageAuthenticationCodeMethodOne(input: N, key: SKmac)
+        let DO8E = "8E08" + CC!
+        let ProtectedAPDU = "0CB0\(HexBlock)\(HexOffset)00000E" + DO97 + DO8E + "0000"
+        return ProtectedAPDU
+    }
+    
+    func VerifyReadBinaryRAPDU(APDU:String,SSC:String,Key:String)->Bool{
+        let RAPDU = APDU.dropLast(4).uppercased()
+        var DropIndex:Int = 0
+        if util?.FindIndexOf(inputString: String(RAPDU), target: "99026A828E08") != -1 {
+            return false
+        }else{
+            if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
+                if util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08") == -1 {
+                    if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
+                        return false
+                    }else{
+                        DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
+                        print(DropIndex)
+                    }
+                }else{
+                    DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
+                    print(DropIndex)
+                }
+                
+            }else{
+                DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
+                print(DropIndex)
+            }
+            
+            var K = SSC + RAPDU.dropLast(DropIndex-8) + "80"
+            while(K.count % 16 != 0){
+                K.append("00")
+            }
+            let CC = self.util?.MessageAuthenticationCodeMethodOne(input: K, key: Key)
+            if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
+                if util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08") == -1 {
+                    DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
+                    print(DropIndex)
+                }else{
+                    DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
+                    print(DropIndex)
+                }
+            }else{
+                DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
+                print(DropIndex)
+            }
+            let DO8E = RAPDU.dropFirst(DropIndex+12)
+            if CC! == DO8E {
+                return true
+            }else{
+                return false
+            }
+        }
+        
+    }
+    
     func SplitDataWithTags(dg:String,Tag:String)->String{
         if dg.contains(Tag) {
             let r = dg.range(of:Tag)?.lowerBound
@@ -704,6 +874,27 @@ public class PassportController
         }
         
         return trimmedString
+    }
+    
+    // GET CHECK SUM FROM MRZ DATA
+    func getChecksum(data:String)->String{
+        var intarr:[Int] = []
+        let chararr = Array(data)
+        for char in chararr {
+            if AlphabetArr[char] != nil {
+                intarr.append(AlphabetArr[char]!)
+            }else{
+                intarr.append(Int(String(char))!)
+            }
+            
+        }
+        var i = 0
+        for _ in intarr {
+            intarr[i] *= weight[i%3]
+            i += 1
+        }
+        let result = intarr.reduce(0,+)
+        return String(result % 10)
     }
     
     
@@ -1220,198 +1411,10 @@ public class PassportController
     }
     
     
-    //MARK: - BAC
-    func BasicAccessControl(mrz:String) async -> Bool {
-        
-        print("""
-        
-        #####################################
-          BEGIN EXTERNAL AUTHENTICATION STEP 
-        #####################################
-        
-        """)
-        
-        // MARK: - Step 1 : Hash MRZ Data with SHA1 Algorithm
-        let mrzData = mrz.data(using: .utf8)
-        let Kseed = util?.sha1HashData(data: mrzData!).prefix(32)
-        print("LIB >>>> Kseed : " + Kseed!)
-        
-        // MARK: - Step 2 / 3 : Calculate Kenc and Kmac from Kseed and adjust Parity
-        let Key1 = util?.CalculateKey(Kseed: String(Kseed!))
-        let Kenc = Key1![0]
-        let Kmac = Key1![1]
-        
-        print("LIB >>>> Kenc : " + Kenc!)
-        print("LIB >>>> Kmac : " + Kmac!)
-        
-        // MARK: - Step 4 : Initial SmartCard
-        
-
-        if isSmartCardInitialized! {
-            isCardSessionBegin = await rmngr.beginCardSession()
-            delegate?.onBeginCardSession(isSuccess: isCardSessionBegin!)
-        }
-        
-        if isCardSessionBegin ?? false {
-            
-            // MARK: - Step 5 : Transmit APDU for SELECT DF of Passport
-            //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
-            print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
-            var res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR2)
-            print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
-            
-            
-            if res == "nil" {
-                
-                print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
-                delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError: true)
-                print("""
-                
-                #####################################
-                              THE END !!!
-                #####################################
-                
-                """)
-                rmngr.endCardSession()
-                return false
-            }else{
-                
-                if res.suffix(2) == "6700" {
-                    
-                    // MARK: - Step 5.1 : Transmit APDU for SELECT DF of Passport
-                    //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
-                    print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
-                    res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR)
-                    print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
-                    
-                }
-                
-                // MARK: - Step 6 : Transmit Get Challenge APDU
-                //print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> : " + GETCHALLENGESTR)
-                print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> ")
-                res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: GETCHALLENGESTR)
-                print("LIB <<<< (APDU RES GET CHALLENGE) <<<< : " + res.uppercased())
-                if res.count <= 4 {
-                    print("LIB >>>> GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())")
-                    print("""
-                    
-                    #####################################
-                                  THE END !!!
-                    #####################################
-                    
-                    """)
-                    delegate?.onErrorOccur(errorMessage: "GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())",isError: true)
-                    rmngr.endCardSession()
-                    return false
-                }
-                let RNDIC = res.uppercased().dropLast(4)
-                
-                // MARK: - Step 7 : Generate random 8 byte hex and 16 byte hex
-                let Kifd = util?.RandomHex(numDigit: 32)
-                let RNDIFD = util?.RandomHex(numDigit: 16)
-                
-                // MARK: - Step 8 : Get S by concatenate RNDIFD + RNDIC + Kifd
-                let S = RNDIFD! + RNDIC + Kifd!
-                print("LIB >>>> S : " + S)
-                
-                // MARK: - Step 9 : Get Eifd by Encrypt S with Kenc by 3DES CBC Algorithm
-                let Eifd = util?.TripleDesEncCBC(input: S, key: Kenc!)
-                print("LIB >>>> Eifd : " + Eifd!)
-                
-                // MARK: - Step 10 : Get Mifd by Calculate Message Authentication Code Padding Method 2 over Eifd by Kmac
-                let Mifd = util?.MessageAuthenticationCodeMethodTwo(input: Eifd!, key: Kmac!)
-                print("LIB MSG >>>> Mifd : " + Mifd!)
-                
-                // MARK: Step 11 : Construct APDU Cmd for do External Authentication Cmd = Eifd concatinate with Mifd
-                let apdu = "0082000028" + Eifd! + Mifd! + "28"
-                
-                // MARK: - Step 12 : Send APDU command
-                //print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : " + apdu)
-                print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : ")
-                res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES EXTERNAL AUTH) <<<< : " + res.uppercased())
-                
-                if res.count <= 4 {
-                    print("LIB >>>> EXTERNAL AUTHENTICATION UNSUCCESS")
-                    print("""
-                    
-                    #####################################
-                                  THE END !!!
-                    #####################################
-                    
-                    """)
-                    delegate?.onErrorOccur(errorMessage: "EXTERNAL AUTHENTICATION UNSUCCESS",isError: true)
-                    rmngr.endCardSession()
-                    return false
-                }
-                // MARK: - Step 13 : Get Eic by Cut Off Mic from response and decrypt Eic to get R
-                let Eic = res.uppercased().dropLast(20)
-                print("LIB >>>> Eic : " + Eic)
-                let R = util?.TripleDesDecCBC(input: String(Eic), key: Kenc!)
-                print("LIB >>>> R : " + R!)
-          
-                //MARK: - Step 14 : Get Kic and SSC from R
-                let Kic = R!.dropFirst(32)
-                print("LIB >>>> Kic : " + Kic)
-                let a = R?.dropLast(32)
-                let b = a!.dropLast(16)
-                let c = a!.dropFirst(16)
-                SSCP = String(b.dropFirst(8) + c.dropFirst(8))
-                print("LIB >>>> SSC : " + SSCP)
-          
-                // MARK: - Step 15 : Calculate KSseed by XOR Kic with Kifd
-                let SKseed = util?.XOR(Data1: String(Kic), Data2: Kifd!)
-          
-                // MARK: - Step 16 : Calculate KSenc and KSmac from SKeed
-                let SKey = util?.CalculateKey(Kseed: SKseed!)
-                SKenc = SKey![0]!
-                SKmac = SKey![1]!
-                print("LIB >>>> SKenc : " + SKenc)
-                print("LIB >>>> SKmac : " + SKmac)
-          
-                print("""
-                
-                #####################################
-                  END EXTERNAL AUTHENTICATION STEP
-                #####################################
-                
-                """)
-                return true
-                
-            } // Select DF
-            
-        }else{
-            delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: true)
-            print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
-            rmngr.endCardSession()
-            return false
-        } // Init Card Session
-        
-    }
     
     
-    // GET CHECK SUM FROM MRZ DATA
-    func getChecksum(data:String)->String{
-        var intarr:[Int] = []
-        let chararr = Array(data)
-        for char in chararr {
-            if AlphabetArr[char] != nil {
-                intarr.append(AlphabetArr[char]!)
-            }else{
-                intarr.append(Int(String(char))!)
-            }
-            
-        }
-        var i = 0
-        for _ in intarr {
-            intarr[i] *= weight[i%3]
-            i += 1
-        }
-        let result = intarr.reduce(0,+)
-        return String(result % 10)
-    }
     
-    
+    // MARK: - START READ RFID
     public func ReadRFIDData(documentNo:String,dob:String,doe:String,common:Bool,dg1:Bool,dg2:Bool,dg11:Bool) {
         
         
@@ -1422,7 +1425,7 @@ public class PassportController
         print(mrz)
         
         // Plus for external authen
-        eachProgress += 1.0
+        eachProgress += 3.0
         
         if dg1 {
             eachProgress += 1.0
@@ -1446,135 +1449,140 @@ public class PassportController
             
             if isSuccess {
                 
-                let DGTAG:[String] = await readCommon()
-                progress += eachProgress
-                delegate?.onProgressReadPassportData(progress: progress)
+//                let DGTAG:[String] = await readCommon()
+//                progress += eachProgress
+//                delegate?.onProgressReadPassportData(progress: progress)
                 
-                if DGTAG.contains("61") {
-                    print("LIB >>>> CHIP SUPPORT DG1")
+                if dg1 {
                     await readDG1()
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG1")
-                }
-                
-                if DGTAG.contains("75") {
-                    print("LIB >>>> CHIP SUPPORT DG2")
-                    await readDG2()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG2")
-                }
-                
-                
-                if DGTAG.contains("63") {
-                    print("LIB >>>> CHIP SUPPORT DG3")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG3")
-                }
-                
-                if DGTAG.contains("76") {
-                    print("LIB >>>> CHIP SUPPORT DG4")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG4")
-                }
-                
-                if DGTAG.contains("65") {
-                    print("LIB >>>> CHIP SUPPORT DG5")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG5")
-                }
-                
-                if DGTAG.contains("66") {
-                    print("LIB >>>> CHIP SUPPORT DG6")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG6")
-                }
-                
-                if DGTAG.contains("67") {
-                    print("LIB >>>> CHIP SUPPORT DG7")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG7")
-                }
-                
-                if DGTAG.contains("68") {
-                    print("LIB >>>> CHIP SUPPORT DG8")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG8")
-                }
-                
-                if DGTAG.contains("69") {
-                    print("LIB >>>> CHIP SUPPORT DG9")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG9")
-                }
-                
-                if DGTAG.contains("6A") {
-                    print("LIB >>>> CHIP SUPPORT DG10")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG10")
-                }
-                
-                if DGTAG.contains("6B") {
-                    print("LIB >>>> CHIP SUPPORT DG11")
-                    await readDG11()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG11")
-                }
-                
-                if DGTAG.contains("6C") {
-                    print("LIB >>>> CHIP SUPPORT DG12")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG12")
-                }
-                
-                if DGTAG.contains("6D") {
-                    print("LIB >>>> CHIP SUPPORT DG13")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG13")
-                }
-                
-                if DGTAG.contains("6E") {
-                    print("LIB >>>> CHIP SUPPORT DG14")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG14")
-                }
-                
-                if DGTAG.contains("6F") {
-                    print("LIB >>>> CHIP SUPPORT DG15")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG15")
-                }
-                
-                if DGTAG.contains("70") {
-                    print("LIB >>>> CHIP SUPPORT DG16")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG16")
-                }
-                
-                if DGTAG.contains("77") {
-                    print("LIB >>>> CHIP SUPPORT SOD")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT SOD")
-                }
-                
-                
-                if dg1 {
-                    
                 }
                 
                 if dg2 {
-                    
+                    await readDG2()
+                    progress += eachProgress
+                    delegate?.onProgressReadPassportData(progress: progress)
                 }
-                
                 
                 if dg11 {
-                    
+                    await readDG11()
+                    progress += eachProgress
+                    delegate?.onProgressReadPassportData(progress: progress)
                 }
+                
+//                if DGTAG.contains("61") {
+//                    print("LIB >>>> CHIP SUPPORT DG1")
+//                    await readDG1()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG1")
+//                }
+//                
+//                if DGTAG.contains("75") {
+//                    print("LIB >>>> CHIP SUPPORT DG2")
+//                    await readDG2()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG2")
+//                }
+//                
+//                
+//                if DGTAG.contains("63") {
+//                    print("LIB >>>> CHIP SUPPORT DG3")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG3")
+//                }
+//                
+//                if DGTAG.contains("76") {
+//                    print("LIB >>>> CHIP SUPPORT DG4")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG4")
+//                }
+//                
+//                if DGTAG.contains("65") {
+//                    print("LIB >>>> CHIP SUPPORT DG5")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG5")
+//                }
+//                
+//                if DGTAG.contains("66") {
+//                    print("LIB >>>> CHIP SUPPORT DG6")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG6")
+//                }
+//                
+//                if DGTAG.contains("67") {
+//                    print("LIB >>>> CHIP SUPPORT DG7")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG7")
+//                }
+//                
+//                if DGTAG.contains("68") {
+//                    print("LIB >>>> CHIP SUPPORT DG8")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG8")
+//                }
+//                
+//                if DGTAG.contains("69") {
+//                    print("LIB >>>> CHIP SUPPORT DG9")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG9")
+//                }
+//                
+//                if DGTAG.contains("6A") {
+//                    print("LIB >>>> CHIP SUPPORT DG10")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG10")
+//                }
+//                
+//                if DGTAG.contains("6B") {
+//                    print("LIB >>>> CHIP SUPPORT DG11")
+//                    await readDG11()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG11")
+//                }
+//                
+//                if DGTAG.contains("6C") {
+//                    print("LIB >>>> CHIP SUPPORT DG12")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG12")
+//                }
+//                
+//                if DGTAG.contains("6D") {
+//                    print("LIB >>>> CHIP SUPPORT DG13")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG13")
+//                }
+//                
+//                if DGTAG.contains("6E") {
+//                    print("LIB >>>> CHIP SUPPORT DG14")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG14")
+//                }
+//                
+//                if DGTAG.contains("6F") {
+//                    print("LIB >>>> CHIP SUPPORT DG15")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG15")
+//                }
+//                
+//                if DGTAG.contains("70") {
+//                    print("LIB >>>> CHIP SUPPORT DG16")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT DG16")
+//                }
+//                
+//                if DGTAG.contains("77") {
+//                    print("LIB >>>> CHIP SUPPORT SOD")
+//                }else{
+//                    print("LIB >>>> CHIP NOT SUPPORT SOD")
+//                }
+                
                 
                 delegate?.onCompleteReadPassportData(data: data!)
                
