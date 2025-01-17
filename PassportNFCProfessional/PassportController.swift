@@ -1426,7 +1426,7 @@ public class PassportController
                         print("Endorsements : " + (data?.endorsements)!)
                         print("Image Of Rear : " + ((data?.imageOfFrontDoc)!))
                         print("Date and time of document personalized : " + (data?.dateTimeDocPersonalization)!)
-                        print("Serial Number of Personalization System " + (data?.serialNumberDocPersonalizationSystem)!)
+                        print("Serial Number of Personalization System : " + (data?.serialNumberDocPersonalizationSystem)!)
                         print("\n")
                         
                     } // DG11 NOT FOUND
@@ -1446,7 +1446,7 @@ public class PassportController
         print("""
         
         #####################################
-              End READ DATA GROUP 11 
+              End READ DATA GROUP 12 
         #####################################
         
         """)
