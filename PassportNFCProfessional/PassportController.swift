@@ -700,7 +700,54 @@ public class PassportController
 
     func getDataFromDO87(in input:String) -> String {
         
-        return String(input.dropFirst(findIndexAfterPattern(in: input)))
+        let result = CalculateDO87_Testing(input)
+        print("LIB >>>> DO87 Data : \(result)")
+        return result
+        //return String(input.dropFirst(findIndexAfterPattern(in: input)))
+    }
+    
+    func CalculateDO87_Testing(_ apdu:String)->String{
+        var index = findIndexAfterPattern(in: apdu)
+        // Check that len == data.len or not
+        var expect_do87 = apdu.dropFirst(index)
+        var expect_len = expect_do87.count/2
+        var do87 = apdu.prefix(index).dropFirst(2).dropLast(2)
+        var do87_len = UInt32(do87,radix: 16)! - 1
+        if do87_len == expect_len {
+            return String(expect_do87)
+        }else{
+            if index < 10 {
+                index = index + 2
+            }
+            expect_do87 = apdu.dropFirst(index)
+            expect_len = expect_do87.count/2
+            do87 = apdu.prefix(index).dropFirst(2).dropLast(2)
+            do87_len = UInt32(do87,radix: 16)! - 1
+            if do87_len == expect_len {
+                return String(expect_do87)
+            }else{
+                if index < 10 {
+                    index = index + 2
+                }
+                expect_do87 = apdu.dropFirst(index)
+                expect_len = expect_do87.count/2
+                do87 = apdu.prefix(index).dropFirst(2).dropLast(2)
+                do87_len = UInt32(do87,radix: 16)! - 1
+                if do87_len == expect_len {
+                    return String(expect_do87)
+                }else{
+                    expect_do87 = apdu.dropFirst(index)
+                    expect_len = expect_do87.count/2
+                    do87 = apdu.prefix(index).dropFirst(4).dropLast(2)
+                    do87_len = UInt32(do87,radix: 16)! - 1
+                    if do87_len == expect_len {
+                        return String(expect_do87)
+                    }else{
+                        return ""
+                    }
+                }
+            }
+        }
     }
     
     func trimTrailing80(from hexString: String) -> String {
@@ -909,8 +956,9 @@ public class PassportController
     
     // MARK: - DG1 DATA MANAGEMENT
     func CalculateLenDG1(APDU:String,SKenc:String)->String{
-        var result = getDataFromDO87(in: APDU).uppercased()
+        var result = APDU.uppercased()
         result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        result = getDataFromDO87(in: result)
         result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(2))!)
         let index = result.count - (util?.FindIndexOf(inputString: String(result), target: "5F1F"))!
         let length = result.dropLast(index)
@@ -919,16 +967,17 @@ public class PassportController
     
     func GetDataDG1(APDU:String,SKenc:String)->String{
         //let result = APDU.dropFirst(6).uppercased()
-        let result = getDataFromDO87(in: APDU).uppercased()
+        let result = APDU.uppercased()
         var result2:Substring = ""
         if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
             result2 = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!)
         }else{
             result2 = result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!)
         }
-        let result3 = util?.TripleDesDecCBC(input: String(result2), key: SKenc)
+        var result3 = getDataFromDO87(in: String(result2))
+        result3 = (util?.TripleDesDecCBC(input: String(result3), key: SKenc))!
         //print("LIB >>>> DG1 HEX : " + result3!.dropLast(16))
-        let result4 = trimTrailing80(from: result3!)
+        let result4 = trimTrailing80(from: result3)
         return (util?.hexStringtoAscii(result4))!
     }
     
@@ -1124,9 +1173,10 @@ public class PassportController
     // MARK: - DG2 DATA MANAGEMENT
     func CalculateLenDG2(APDU:String,SKenc:String)->[String]{
         //var result = APDU.dropFirst(6)
-        var result = getDataFromDO87(in: APDU).uppercased()
-        result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
+        var result = APDU.uppercased()//getDataFromDO87(in: APDU).uppercased()
+        result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990290008E08"))!))
         //print("result 1 : " + result)
+        result = getDataFromDO87(in: result)
         let encResult = util?.TripleDesDecCBC(input: String(result), key: SKenc)
         print("LIB >>>>  CALCULATE DG2 LEN ENC RESULT : " + encResult!)
         // Calculate length of header in biometric template
@@ -1153,12 +1203,13 @@ public class PassportController
     
     func GetDataDG2(APDU:String,SKenc:String)->String{
         //var result = APDU.dropFirst(10)//.dropFirst(10)
-        var result = getDataFromDO87(in: APDU).uppercased()
+        var result = APDU.uppercased()//getDataFromDO87(in: APDU).uppercased()
         if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99026282"))!))
         }else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
         }
+        result = getDataFromDO87(in: result)
         let result1 = (util?.TripleDesDecCBC(input: String(result), key: SKenc))!
         print("LIB >>>> GET DATA DG2 ENC : ")
         print(result1)
@@ -1168,10 +1219,11 @@ public class PassportController
     
     func GetRemainDataDG2(APDU:String,SKenc:String)->String{
         //var result = APDU.dropFirst(10)
-        var result = getDataFromDO87(in: APDU).uppercased()
+        var result = APDU.uppercased()//getDataFromDO87(in: APDU).uppercased()
         var result1:String
         if util?.FindIndexOf(inputString: String(result), target: "990290008E") == -1 {
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990262828E"))!))
+            result = getDataFromDO87(in: result)
             result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!)
             print("LIB >>>> DECRYPT BEFORE DROP : ")
             print(result)
@@ -1182,6 +1234,7 @@ public class PassportController
             print(result1)
         }else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990290008E"))!))
+            result = getDataFromDO87(in: result)
             result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!)
             print("LIB >>>> DECRYPT BEFORE DROP : ")
             print(result)
@@ -1333,7 +1386,7 @@ public class PassportController
     func GetDataDG11(APDU:String,SKenc:String)->String{
         //var result = APDU.dropFirst(6)
         //var result = APDU.dropFirst(8)
-        var result = getDataFromDO87(in: APDU).uppercased()
+        var result = APDU.uppercased()//getDataFromDO87(in: APDU).uppercased()
         if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
             if util?.FindIndexOf(inputString: String(result), target: "99026282") == -1 {
                 result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99027001"))!))
@@ -1344,6 +1397,7 @@ public class PassportController
         else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
         }
+        result = getDataFromDO87(in: result)
         result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
     
         return String(result)
@@ -1409,7 +1463,7 @@ public class PassportController
                     }else{
                         
                         // Step 5 : Read DG12
-                        let dg12 = GetDataDG11(APDU:res, SKenc: SKenc)
+                        let dg12 = GetDataDG12(APDU:res, SKenc: SKenc)
                         print("LIB >>>> DG12 : " + dg12)
                         
                         // Step 6 : Loop for each data
@@ -1460,7 +1514,8 @@ public class PassportController
     func GetDataDG12(APDU:String,SKenc:String)->String{
         //var result = APDU.dropFirst(6)
         //var result = APDU.dropFirst(8)
-        var result = getDataFromDO87(in: APDU).uppercased()
+        //var result = getDataFromDO87(in: APDU).uppercased()
+        var result:String = APDU.uppercased()
         if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
             if util?.FindIndexOf(inputString: String(result), target: "99026282") == -1 {
                 result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99027001"))!))
@@ -1471,6 +1526,11 @@ public class PassportController
         else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
         }
+        print("Before get data from DO87")
+        print(result)
+        result = getDataFromDO87(in: result).uppercased()
+        print("After get data from DO87")
+        print(result)
         result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
     
         return String(result)
