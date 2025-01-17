@@ -19,6 +19,7 @@ public struct PassportModel{
     public var documentNumber:String?
     public var docNumCheckDigit:String?
     public var nationality:String?
+    public var countryCode:String?
     public var dateOfBirth:String?
     public var dateOfBirthCheckDigit:String?
     public var sex:String?

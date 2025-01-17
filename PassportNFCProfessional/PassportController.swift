@@ -801,6 +801,7 @@ public class PassportController
                     data?.documentCode = String(data1.prefix(2))
                     var data2 = data1.dropFirst(2)
                     data?.issueState = countryCodes[String(data2.prefix(3))]
+                    data?.countryCode = String(data2.prefix(3))
                     data2 = data2.dropFirst(3)
                     data?.holderFullName = String(data2.prefix(31))
                     let fullName = String(data2.prefix(31))
@@ -869,6 +870,7 @@ public class PassportController
                     print("\n")
                     print("Data Group 1 Data : ")
                     print("Document Type : Passport" )
+                    print("countyCode : \(data?.countryCode ?? "")")
                     print("Issue State : \(data?.issueState ?? "")")
                     print("Fullname : \(data?.holderFullName ?? "")")
                     print("Firstname : \(data?.holderFirstName ?? "")")
