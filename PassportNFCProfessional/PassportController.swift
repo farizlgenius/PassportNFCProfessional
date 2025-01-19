@@ -706,6 +706,8 @@ public class PassportController
         //return String(input.dropFirst(findIndexAfterPattern(in: input)))
     }
     
+    
+    
     func CalculateDO87(_ apdu:String)->String{
         var index = findIndexAfterPattern(in: apdu)
         // Check that len == data.len or not
@@ -1138,14 +1140,18 @@ public class PassportController
                 SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
                 verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
                 var r:String = ""
+                var rr:String = ""
                 if verify {
-                    r = GetDataDG2(APDU: res, SKenc: SKenc)
+                    let arr = GetDataDG2(APDU: res, SKenc: SKenc)
+                    r = arr[0]
+                    rr = arr[1]
                     let allLen = (UInt32(len[0],radix: 16)! * 2) - 1000
                     print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
                     if r.count < allLen {
         
                         print("LIB >>>> DG2 FOUND REMAIN")
                         var re:String = ""
+                        var re2:String = ""
                         // Step 7 : Get Remain Data DG2
                         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                         //apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
@@ -1159,8 +1165,9 @@ public class PassportController
                         SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
                         verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
                         if verify {
-                            let r2 = GetRemainDataDG2(APDU: res, SKenc: SKenc)
-                            re.append(r2)
+                            let arr = GetRemainDataDG2(APDU: res, SKenc: SKenc)
+                            re.append(arr[0])
+                            re2.append(arr[1])
                         }else{
                             print("LIB >>>> COMPARE RES APDU READ REMAIN DG2 FAIL")
                             delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ REMAIN DG2 FAIL",isError: true)
@@ -1186,8 +1193,9 @@ public class PassportController
                             SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
                             verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
                             if verify {
-                                let r2 = GetRemainDataDG2(APDU: res, SKenc: SKenc)
-                                re.append(r2)
+                                let arr = GetRemainDataDG2(APDU: res, SKenc: SKenc)
+                                re.append(arr[0])
+                                re2.append(arr[1])
                             }else{
                                 print("LIB >>>> COMPARE RES APDU READ REMAIN DG2 FAIL")
                                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ REMAIN DG2 FAIL",isError: true)
@@ -1227,6 +1235,7 @@ public class PassportController
                          
                     }else{
                         let r2 = r.dropFirst(92)
+                        let rr2 = rr.dropFirst(92)
                         if let image = UIImage(data: String(r2).hexadecimal!){
                             print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
                             print(r)
@@ -1234,16 +1243,33 @@ public class PassportController
                             print(r2)
                             let djpg = image.jpegData(compressionQuality: 1.0)
                             data?.faceImage = djpg?.base64EncodedString()
-                        }else{
-                            let r2 = r.dropFirst(74)
-                            print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+                        }else if let image = UIImage(data: String(rr2).hexadecimal!){
+                            print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
                             print(r)
-                            print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+                            print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
                             print(r2)
+                            let djpg = image.jpegData(compressionQuality: 1.0)
+                            data?.faceImage = djpg?.base64EncodedString()
+                        }
+                        else{
+                            let r2 = r.dropFirst(74)
+                            let rr2 = rr.dropFirst(74)
                             if let image = UIImage(data:String(r2).hexadecimal!){
+                                print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+                                print(r)
+                                print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+                                print(r2)
                                 let djpg = image.jpegData(compressionQuality: 1.0)
                                 data?.faceImage = djpg?.base64EncodedString()
-                            }else{
+                            }else if let image = UIImage(data: String(rr2).hexadecimal!){
+                                print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+                                print(r)
+                                print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+                                print(r2)
+                                let djpg = image.jpegData(compressionQuality: 1.0)
+                                data?.faceImage = djpg?.base64EncodedString()
+                            }
+                            else{
                                 data?.faceImage = ""
                             }
                         }
@@ -1306,7 +1332,7 @@ public class PassportController
     
     
     
-    func GetDataDG2(APDU:String,SKenc:String)->String{
+    func GetDataDG2(APDU:String,SKenc:String)->[String]{
         //var result = APDU.dropFirst(10)//.dropFirst(10)
         var result = APDU.uppercased()//getDataFromDO87(in: APDU).uppercased()
         if util?.FindIndexOf(inputString: String(result), target: "99029000") == -1 {
@@ -1314,42 +1340,52 @@ public class PassportController
         }else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
         }
-        result = getDataFromDO87(in: result)
-        let result1 = (util?.TripleDesDecCBC(input: String(result), key: SKenc))!
+        // Manual Cut DO87
+        var result1 = getDataFromDO87(in: result)
+        var fix = String(result.dropFirst(10))
+        result1 = (util?.TripleDesDecCBC(input: String(result1), key: SKenc))!
+        fix = (util?.TripleDesDecCBC(input: String(fix), key: SKenc))!
         print("LIB >>>> GET DATA DG2 ENC : ")
         print(result1)
         //.dropFirst(92)
-        return result1
+        return [result1,fix]
     }
     
-    func GetRemainDataDG2(APDU:String,SKenc:String)->String{
+    func GetRemainDataDG2(APDU:String,SKenc:String)->[String]{
         //var result = APDU.dropFirst(10)
         var result = APDU.uppercased()//getDataFromDO87(in: APDU).uppercased()
         var result1:String
+        var result2:String
         if util?.FindIndexOf(inputString: String(result), target: "990290008E") == -1 {
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990262828E"))!))
-            result = getDataFromDO87(in: result)
-            result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!)
+            var nofix = getDataFromDO87(in: result)
+            var fix = String(result.dropFirst(10))
+            nofix = String((util?.TripleDesDecCBC(input: String(nofix), key: SKenc).dropFirst(4))!)
+            fix = String((util?.TripleDesDecCBC(input: String(fix), key: SKenc).dropFirst(4))!)
             print("LIB >>>> DECRYPT BEFORE DROP : ")
-            print(result)
+            print(nofix)
             //result = result.dropLast(10)
             //result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
-            result1 = trimTrailing80(from: String(result))
+            result1 = trimTrailing80(from: String(nofix))
+            result2 = trimTrailing80(from: String(fix))
             print("LIB >>>> DECRYPT RESULT : ")
             print(result1)
         }else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990290008E"))!))
-            result = getDataFromDO87(in: result)
-            result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(4))!)
+            var nofix = getDataFromDO87(in: result)
+            var fix = String(result.dropFirst(10))
+            nofix = String((util?.TripleDesDecCBC(input: String(nofix), key: SKenc).dropFirst(4))!)
+            fix = String((util?.TripleDesDecCBC(input: String(fix), key: SKenc).dropFirst(4))!)
             print("LIB >>>> DECRYPT BEFORE DROP : ")
-            print(result)
+            print(nofix)
             //result = result.dropLast(2)
             //result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
-            result1 = trimTrailing80(from: String(result))
+            result1 = trimTrailing80(from: nofix)
+            result2 = trimTrailing80(from: fix)
             print("LIB >>>> DECRYPT RESULT : ")
-            print(result1)
+            print(nofix)
         }
-        return result1
+        return [result1,result2]
     }
     
     func trimHexStringToLength(hexString: String, targetLength: Int) -> String {
