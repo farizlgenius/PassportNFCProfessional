@@ -31,6 +31,9 @@ public struct PassportModel{
     // DG2
     public var faceImage:String?
     
+    // DG7
+    public var signatureImage:String?
+    
     // DG11
     public var personalNumber:String?
     public var fullDateOfBirth:String?
