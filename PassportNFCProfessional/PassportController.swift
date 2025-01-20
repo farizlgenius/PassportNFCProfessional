@@ -1383,7 +1383,7 @@ public class PassportController
             result1 = trimTrailing80(from: nofix)
             result2 = trimTrailing80(from: fix)
             print("LIB >>>> DECRYPT RESULT : ")
-            print(nofix)
+            print(result1)
         }
         return [result1,result2]
     }
