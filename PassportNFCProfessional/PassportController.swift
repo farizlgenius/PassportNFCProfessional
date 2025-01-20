@@ -1145,7 +1145,7 @@ public class PassportController
                     let arr = GetDataDG2(APDU: res, SKenc: SKenc)
                     r = arr[0]
                     rr = arr[1]
-                    let allLen = (UInt32(len[0],radix: 16)! * 2) - 1000
+                    let allLen = (UInt32(len[0],radix: 16)! * 2) //- 1000
                     print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
                     if r.count < allLen {
         
@@ -1204,7 +1204,8 @@ public class PassportController
                             } // end of verify res apdu read ramin dg2
                         }
                         // JP2 = 170 = Format
-                        var re1 = String(re.dropFirst(170))
+                        //var re1 = String(re.dropFirst(170))
+                        var re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "0000000C6A502020"))!))
                         if let image = UIImage(data: re1.hexadecimal!) {
                             print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
                             print(re)
@@ -1214,7 +1215,7 @@ public class PassportController
                             data?.faceImage = djpg?.base64EncodedString()
                         }else{
                             // JFIF Format
-                            re1 = String(re.dropFirst(152))
+                            re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946"))!))
                             print("LIB >>>> FACE DATA WITH TEMPLATE (JFIF FORMAT) : ")
                             print(re)
                             print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
@@ -1234,8 +1235,10 @@ public class PassportController
                         }
                          
                     }else{
-                        let r2 = r.dropFirst(92)
-                        let rr2 = rr.dropFirst(92)
+                        //let r2 = r.dropFirst(92)
+                        let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "0000000C6A502020"))!))
+                        //let rr2 = rr.dropFirst(92)
+                        let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "0000000C6A502020"))!))
                         if let image = UIImage(data: String(r2).hexadecimal!){
                             print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
                             print(r)
@@ -1252,8 +1255,10 @@ public class PassportController
                             data?.faceImage = djpg?.base64EncodedString()
                         }
                         else{
-                            let r2 = r.dropFirst(74)
-                            let rr2 = rr.dropFirst(74)
+//                            let r2 = r.dropFirst(74)
+//                            let rr2 = rr.dropFirst(74)
+                            let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946"))!))
+                            let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "FFD8FFE000104A464946"))!))
                             if let image = UIImage(data:String(r2).hexadecimal!){
                                 print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
                                 print(r)
@@ -2088,6 +2093,7 @@ public class PassportController
                 progress += eachProgress
                 delegate?.onProgressReadPassportData(progress: progress)
                 
+                
                 if dg1 {
                     await readDG1()
                     progress += eachProgress
@@ -2105,6 +2111,10 @@ public class PassportController
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }
+                
+                await readDG7()
+                progress += eachProgress
+                delegate?.onProgressReadPassportData(progress: progress)
                 
                 
                 delegate?.onCompleteReadPassportData(data: data!)
