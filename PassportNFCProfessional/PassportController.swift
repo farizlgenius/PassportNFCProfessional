@@ -1145,7 +1145,7 @@ public class PassportController
                     let arr = GetDataDG2(APDU: res, SKenc: SKenc)
                     r = arr[0]
                     rr = arr[1]
-                    let allLen = (UInt32(len[0],radix: 16)! * 2) //- 1000
+                    let allLen = (UInt32(len[0],radix: 16)! * 2) - 100 //- 1000
                     print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
                     if r.count < allLen {
         
@@ -2111,10 +2111,6 @@ public class PassportController
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }
-                
-                await readDG7()
-                progress += eachProgress
-                delegate?.onProgressReadPassportData(progress: progress)
                 
                 
                 delegate?.onCompleteReadPassportData(data: data!)
