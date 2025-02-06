@@ -1205,15 +1205,22 @@ public class PassportController
                         }
                         // JP2 = 170 = Format
                         //var re1 = String(re.dropFirst(170))
-                        var re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "0000000C6A502020"))!))
-                        if let image = UIImage(data: re1.hexadecimal!) {
-                            print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                            print(re)
-                            print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                            print(re1)
-                            let djpg = image.jpegData(compressionQuality: 1.0)
-                            data?.faceImage = djpg?.base64EncodedString()
+                        var re1 = ""
+                        if util?.FindIndexOf(inputString: re, target: "0000000C6A502020") != -1 {
+                            re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "0000000C6A502020"))!))
+                            if let image = UIImage(data: re1.hexadecimal!) {
+                                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+                                print(re)
+                                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+                                print(re1)
+                                let djpg = image.jpegData(compressionQuality: 1.0)
+                                data?.faceImage = djpg?.base64EncodedString()
+                            }else{
+                                
+                                data?.faceImage = ""
+                            }
                         }else{
+                            
                             // JFIF Format
                             re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946"))!))
                             print("LIB >>>> FACE DATA WITH TEMPLATE (JFIF FORMAT) : ")
@@ -1236,25 +1243,30 @@ public class PassportController
                          
                     }else{
                         //let r2 = r.dropFirst(92)
-                        let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "0000000C6A502020"))!))
-                        //let rr2 = rr.dropFirst(92)
-                        let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "0000000C6A502020"))!))
-                        if let image = UIImage(data: String(r2).hexadecimal!){
-                            print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                            print(r)
-                            print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                            print(r2)
-                            let djpg = image.jpegData(compressionQuality: 1.0)
-                            data?.faceImage = djpg?.base64EncodedString()
-                        }else if let image = UIImage(data: String(rr2).hexadecimal!){
-                            print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                            print(r)
-                            print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                            print(r2)
-                            let djpg = image.jpegData(compressionQuality: 1.0)
-                            data?.faceImage = djpg?.base64EncodedString()
-                        }
-                        else{
+                        if util?.FindIndexOf(inputString: r, target: "0000000C6A502020") != -1 {
+                            
+                            let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "0000000C6A502020"))!))
+                            //let rr2 = rr.dropFirst(92)
+                            let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "0000000C6A502020"))!))
+                            if let image = UIImage(data: String(r2).hexadecimal!){
+                                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+                                print(r)
+                                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+                                print(r2)
+                                let djpg = image.jpegData(compressionQuality: 1.0)
+                                data?.faceImage = djpg?.base64EncodedString()
+                            }else if let image = UIImage(data: String(rr2).hexadecimal!){
+                                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+                                print(r)
+                                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+                                print(r2)
+                                let djpg = image.jpegData(compressionQuality: 1.0)
+                                data?.faceImage = djpg?.base64EncodedString()
+                            }else{
+                                data?.faceImage = ""
+                            }
+                            
+                        }else{
 //                            let r2 = r.dropFirst(74)
 //                            let rr2 = rr.dropFirst(74)
                             let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946"))!))
