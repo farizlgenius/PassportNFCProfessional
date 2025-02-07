@@ -13,7 +13,7 @@
 		045498942D310C2700FE2522 /* PassportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498902D310C2700FE2522 /* PassportController.swift */; };
 		045498952D310C2700FE2522 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498912D310C2700FE2522 /* Utility.swift */; };
 		045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498972D31150500FE2522 /* CryptoTokenKit.framework */; };
-		0454989A2D31152700FE2522 /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498992D31152700FE2522 /* CryptoKit.framework */; };
+		04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498992D31152700FE2522 /* CryptoKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0454989A2D31152700FE2522 /* CryptoKit.framework in Frameworks */,
+				04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */,
 				045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

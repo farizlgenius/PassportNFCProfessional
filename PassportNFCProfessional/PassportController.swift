@@ -798,6 +798,15 @@ public class PassportController
         return String(result % 10)
     }
     
+    // Append Document Number if length less than 9
+    func appendDocNo(docNo:String)->String{
+        var doc = docNo
+        while doc.count < 9 {
+            doc = doc + "<"
+        }
+        return doc
+    }
+    
     // MARK: - EF.COM
        func readCommon() async -> [String] {
            
@@ -1216,10 +1225,9 @@ public class PassportController
                                 let djpg = image.jpegData(compressionQuality: 1.0)
                                 data?.faceImage = djpg?.base64EncodedString()
                             }else{
-                                
                                 data?.faceImage = ""
                             }
-                        }else{
+                        }else if util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946") != -1{
                             
                             // JFIF Format
                             re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946"))!))
@@ -1239,6 +1247,8 @@ public class PassportController
                                 data?.faceImage = ""
                             }
                             
+                        }else{
+                            data?.faceImage = ""
                         }
                          
                     }else{
@@ -1266,7 +1276,7 @@ public class PassportController
                                 data?.faceImage = ""
                             }
                             
-                        }else{
+                        }else if util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946") != -1 {
 //                            let r2 = r.dropFirst(74)
 //                            let rr2 = rr.dropFirst(74)
                             let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946"))!))
@@ -1289,6 +1299,8 @@ public class PassportController
                             else{
                                 data?.faceImage = ""
                             }
+                        }else{
+                            data?.faceImage = ""
                         }
                     } // end of get dg2 data
                     
@@ -1842,7 +1854,8 @@ public class PassportController
     public func AutoReadRFIDData(documentNo:String,dob:String,doe:String) {
         
         
-        let docnum = documentNo + getChecksum(data: documentNo)
+        //let docnum = documentNo + getChecksum(data: documentNo)
+        let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
         let birth = dob + getChecksum(data: dob)
         let exp = doe + getChecksum(data: doe)
         let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -2067,7 +2080,8 @@ public class PassportController
     public func ReadRFIDData(documentNo:String,dob:String,doe:String,dg1:Bool,dg2:Bool,dg11:Bool) {
         
         
-        let docnum = documentNo + getChecksum(data: documentNo)
+        //let docnum = documentNo + getChecksum(data: documentNo)
+        let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
         let birth = dob + getChecksum(data: dob)
         let exp = doe + getChecksum(data: doe)
         let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
