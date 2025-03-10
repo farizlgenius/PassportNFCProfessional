@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04375DD52D7ED803007A97BF /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04375DD42D7ED803007A97BF /* Constant.swift */; };
 		045498882D310BE300FE2522 /* PassportNFCProfessional.h in Headers */ = {isa = PBXBuildFile; fileRef = 045498872D310BE300FE2522 /* PassportNFCProfessional.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		045498922D310C2700FE2522 /* PassportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0454988E2D310C2600FE2522 /* PassportModel.swift */; };
 		045498932D310C2700FE2522 /* ReaderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0454988F2D310C2700FE2522 /* ReaderController.swift */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		04375DD42D7ED803007A97BF /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
 		045498842D310BE300FE2522 /* PassportNFCProfessional.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PassportNFCProfessional.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		045498872D310BE300FE2522 /* PassportNFCProfessional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PassportNFCProfessional.h; sourceTree = "<group>"; };
 		0454988E2D310C2600FE2522 /* PassportModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassportModel.swift; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 				0454988F2D310C2700FE2522 /* ReaderController.swift */,
 				045498912D310C2700FE2522 /* Utility.swift */,
 				045498872D310BE300FE2522 /* PassportNFCProfessional.h */,
+				04375DD42D7ED803007A97BF /* Constant.swift */,
 			);
 			path = PassportNFCProfessional;
 			sourceTree = "<group>";
@@ -160,6 +163,7 @@
 			files = (
 				045498952D310C2700FE2522 /* Utility.swift in Sources */,
 				045498932D310C2700FE2522 /* ReaderController.swift in Sources */,
+				04375DD52D7ED803007A97BF /* Constant.swift in Sources */,
 				045498922D310C2700FE2522 /* PassportModel.swift in Sources */,
 				045498942D310C2700FE2522 /* PassportController.swift in Sources */,
 			);
