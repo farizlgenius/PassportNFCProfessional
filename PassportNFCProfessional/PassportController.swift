@@ -144,7 +144,7 @@ public class PassportController
             if res == "nil" {
                 
                 print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
-                delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError: true)
+                delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError:true)
                 print("""
                 
                 #####################################
@@ -261,7 +261,7 @@ public class PassportController
             } // Select DF
             
         }else{
-            delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: true)
+            delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: false)
             print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
             rmngr.endCardSession()
             return false
@@ -765,6 +765,15 @@ public class PassportController
                         }
                     }
                     
+                    let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
+                    if exp! {
+                        print("Document is expried")
+                        data?.expireFlag = "Y"
+                    }else{
+                        print("Document is not expire")
+                        data?.expireFlag = "N"
+                    }
+                    
                     
                     print("\n")
                     print("Data Group 1 Data : ")
@@ -785,7 +794,7 @@ public class PassportController
                     
                 }else{
                     print("LIB >>>> COMPARE RES APDU READ DG1 FAIL")
-                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG1 FAIL",isError: true)
+                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG1 FAIL",isError:true)
                 } // end of verify cc read dg1
                 
             }else{
@@ -1403,6 +1412,12 @@ public class PassportController
                         print("Telephone : \(data?.telephone ?? "")")
                         print("Title : \(data?.title ?? "")")
                         print("\n")
+                        
+                        if data?.expireFlag == "Y" {
+                            print("Document is expried")
+                        }else{
+                            print("Document is not expire")
+                        }
                         
                     } // DG11 NOT FOUND
         

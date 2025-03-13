@@ -52,7 +52,9 @@ public struct PassportModel{
     public var imageOfRearDoc:String?
     public var dateTimeDocPersonalization:String?
     public var serialNumberDocPersonalizationSystem:String?
-
+    
+    // Expire Flag
+    public var expireFlag:String = "N"
     
 }
 
