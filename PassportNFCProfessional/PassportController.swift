@@ -765,6 +765,9 @@ public class PassportController
                         }
                     }
                     
+                    print("Date of expire : ")
+                    print(data?.dateOfExpiry ?? "")
+                    
                     let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
                     if exp! {
                         print("Document is expried")

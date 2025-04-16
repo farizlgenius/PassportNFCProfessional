@@ -330,7 +330,8 @@ class Utility{
     func isExpired(expirationDate: String, format: String = "yyyyMMdd") -> Bool {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = format
-        dateFormatter.timeZone = TimeZone.current
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 
         // Convert string to Date
         guard let expDate = dateFormatter.date(from: expirationDate) else {
@@ -339,7 +340,14 @@ class Utility{
         }
 
         let currentDate = Date()
-        
+        print("Expiration Date : ")
+        print(expirationDate)
+        print("Current Date : ")
+        print(currentDate)
+        print("Expire Date : ")
+        print(expDate)
+        print("Result : ")
+        print(currentDate > expDate)
         return currentDate > expDate // Returns true if expired, false otherwise
     }
     

@@ -41,33 +41,44 @@ public class ReaderController
     // get reader name
     public func getReader()->String{
         if (mngr?.slotNames.count)! > 0 {
-            if isPassport {
-                for reader in mngr!.slotNames {
-                    if reader == "Feitian R502   " {
-                        return "Feitian R502   "
-                    }
+            
+//            if isPassport {
+//                for reader in mngr!.slotNames {
+//                    if reader == "Feitian R502   " {
+//                        return "Feitian R502   "
+//                    }
+//                }
+//                
+//                print("LIB >>>> READER : " + (mngr?.slotNames[0])!)
+//                //print(mngr?.slotNames)
+//                return (mngr?.slotNames[0])!
+//                
+//            }else{
+//                for reader in mngr!.slotNames {
+//                    if reader == "Feitian SCR301" {
+//                        return "Feitian SCR301"
+//                    }
+//                }
+//                
+//                print("LIB >>>> READER : " + (mngr?.slotNames[0])!)
+//                //print(mngr?.slotNames)
+//                return (mngr?.slotNames[0])!
+//            }
+            
+            for reader in mngr!.slotNames {
+                if reader == "Feitian R502   " {
+                    return "Feitian R502   "
                 }
-                
-                print("LIB >>>> READER : " + (mngr?.slotNames[0])!)
-                //print(mngr?.slotNames)
-                return (mngr?.slotNames[0])!
-                
-            }else{
-                for reader in mngr!.slotNames {
-                    if reader == "Feitian SCR301" {
-                        return "Feitian SCR301"
-                    }
-                }
-                
-                print("LIB >>>> READER : " + (mngr?.slotNames[0])!)
-                //print(mngr?.slotNames)
-                return (mngr?.slotNames[0])!
             }
+            
+            print("LIB >>>> NO READER ATTACHED")
+            delegate?.onErrorOccur(errorMessage: "NO READER ATTACHED", isError: true)
+            return "No Reader"
             
         }else{
             print("LIB >>>> NO READER ATTACHED")
             delegate?.onErrorOccur(errorMessage: "NO READER ATTACHED", isError: true)
-             return "No Reader"
+            return "No Reader"
         }
     }
     
