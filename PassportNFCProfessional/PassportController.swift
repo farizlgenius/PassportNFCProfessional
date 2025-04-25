@@ -748,8 +748,8 @@ public class PassportController
                     }
                     
                     // calculate date of expire reference from ICAO Standard
-                    if let d = data?.dateOfIssue,data?.dateOfIssue != "" {
-                        let issueYear = Int((d.prefix(4).dropFirst(2)))
+                    if let d = data?.dateOfIssue,data?.dateOfIssue != "",let issueYear = Int(d.prefix(4).dropFirst(2)) {
+                        let issueYear = Int(d.prefix(4).dropFirst(2))
                         let exYear = Int(expireDate.prefix(2))
                         if abs(issueYear! - exYear!) <= 10  {
                             data?.dateOfExpiry = "20" + expireDate
@@ -885,13 +885,41 @@ public class PassportController
                 print("LIB >>>> DG2 LEN : " + len[0])
                 print("LIB >>>> DG2 OFFSET : " + len[1])
                 
+                var reqLenHex:String = len[0]
+                
                 // Step 5 : Get All Data DG2
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: len[0], SSC: SSCP, SKmac: SKmac)
+                apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
                 //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
                 print("LIB >>>> (APDU CMD READ DG2) >>>> ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
                 print("LIB <<<< (APDU RES READ DG2) <<<< : " + res.uppercased())
+                
+                // Adding : Handle chip limit request data length.
+                
+                if res.uppercased().suffix(4) == "6700" {
+                    
+                    reqLenHex = "0400"
+                    SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
+                    apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
+                    //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
+                    print("LIB >>>> (APDU CMD READ DG2 WITH LEN 1024) >>>> ")
+                    res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
+                    print("LIB <<<< (APDU RES READ DG2 WITH LEN 1024) <<<< : " + res.uppercased())
+                    
+                    if res.uppercased().suffix(4) == "6700" {
+                        
+                        reqLenHex = "0200"
+                        SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
+                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
+                        //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
+                        print("LIB >>>> (APDU CMD READ DG2 WITH LEN 512) >>>> ")
+                        res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
+                        print("LIB <<<< (APDU RES READ DG2 WITH LEN 512) <<<< : " + res.uppercased())
+                        
+                    }
+                }
+                
                 
                 // Step 6 : Verify Res Apdu Read DG2
                 SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
@@ -913,7 +941,7 @@ public class PassportController
                         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                         //apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
                         //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
-                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: len[0], SSC: SSCP, SKmac: SKmac)
+                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
                         print("LIB >>>> (APDU CMD READ DG2) >>>> ")
                         res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
                         print("LIB <<<< (APDU RES READ DG2) <<<< : " + res.uppercased())
@@ -940,7 +968,7 @@ public class PassportController
                                 newOffset = "0" + newOffset
                             }
                             SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: String(newOffset.dropLast(2)), HexOffset: String(newOffset.dropFirst(2)), HexLength: len[0], SSC: SSCP, SKmac: SKmac)
+                            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: String(newOffset.dropLast(2)), HexOffset: String(newOffset.dropFirst(2)), HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
                             print("LIB >>>> (APDU CMD READ DG2) >>>> ")
                             //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
                             res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
