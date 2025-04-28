@@ -100,6 +100,25 @@ public class PassportController
         self.isSmartCardInitialized = isSmartCardInitialized
     }
     
+    // MARK: - HELPER FUNCTION
+    func incrementSSCP(){
+        SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
+    }
+    
+    func sendAPDU(apdu:String,description:String) async -> String{
+        print("LIB >>>> (APDU CMD \(description) >>>> : " + apdu)
+        let res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
+        print("LIB <<<< (APDU RES \(description) <<<< : " + res.uppercased())
+        return res
+        
+    }
+    
+    func handleError(description:String){
+        print("LIB >>>> \(description)")
+        delegate?.onErrorOccur(errorMessage: description,isError: true)
+    }
+    // MARK: - END OF HELPER HUNCTION
+    
     //MARK: - BASIC ACCESS CONTROL
     func BasicAccessControl(mrz:String) async -> Bool {
         
@@ -652,170 +671,165 @@ public class PassportController
         
         """)
         
+        defer{
+            
+            print("""
+            
+            #####################################
+                    END READ DATA GROUP 1
+            #####################################
+            
+            """)
+            
+        }
+        
+        
         // Step 1 : Consruct APDU Cmd for SELECT DG1
-        SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
+        incrementSSCP();
         var apdu = self.ConstructAPDUforSelectDF(DG:FileID.DG1.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
         //print("LIB >>>> (APDU CMD SELECT DG1) >>>> : " + apdu)
-        print("LIB >>>> (APDU CMD SELECT DG1) >>>> ")
-        var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-        print("LIB <<<< (APDU RES SELECT DG1) <<<< : " + res.uppercased())
+        var res = await sendAPDU(apdu: apdu, description: "SELECT DG1")
+        
         
         // Step 2 : Verify Res Apdu select DG1
-        SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-        var verify = VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-        if verify {
-            
-            // Step 3 : Send APDU Read Binary for get length DG data
-            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-            apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "04", SSC: SSCP, SKmac: SKmac)
-            //print("LIB >>>> (APDU CMD GET LEN DG1) >>>> : " + apdu)
-            print("LIB >>>> (APDU CMD GET LEN DG1) >>>> ")
-            res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-            print("LIB <<<< (APDU RES GET LEN DG1) <<<< : " + res.uppercased())
-            
-            // Step 4 : Verify Res Apdu get len DG1
-            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-            verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-            if verify {
-                
-                // Step 5 : Get Len of DG1 from Response
-                let len = CalculateLenDG1(APDU:res, SKenc: SKenc)
-                print("LIB >>>> DG1 LEN : " + len)
-                
-                
-                // Step 6 : Construct APDU For Read DG1 Data
-                SSCP = (self.util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                apdu = self.ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "05", HexLength:len , SSC: SSCP, SKmac: SKmac)
-                //print("LIB >>>> (APDU CMD READ DG1) >>>> : " + apdu)
-                print("LIB >>>> (APDU CMD READ DG1) >>>> ")
-                res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES READ DG1) <<<< : " + res.uppercased())
-                
-                // Step 7 : Verify RES APDU Read Data DG1
-                SSCP = (self.util?.IncrementHex(Hex:SSCP, Increment: 1))!
-                verify = self.VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-                if verify {
-                    let data1 = GetDataDG1(APDU: res, SKenc: SKenc)
-                    print("LIB >>>> DG1 : " + data1)
-                    data?.documentCode = String(data1.prefix(2))
-                    var data2 = data1.dropFirst(2)
-                    data?.issueState = Constant.getCountryFromCode(countryCode: String(data2.prefix(3)))
-                    data?.countryCode = String(data2.prefix(3))
-                    data2 = data2.dropFirst(3)
-                    data?.holderFullName = String(data2.prefix(31)).capitalized
-                    let fullName = String(data2.prefix(31))
-                    print(data?.holderFullName ?? "None")
-                    let splitname = fullName.split(separator: "<", omittingEmptySubsequences: false)
-                    print(splitname)
-                    data?.holderMiddleName = String((splitname[1])).capitalized
-                    data?.holderLastName = String((splitname[0])).capitalized
-                    if splitname[3] != "" {
-                        data?.holderFirstName = String(splitname[2] + " " + splitname[3]).capitalized
-                    }else{
-                        data?.holderFirstName = String((splitname[2])).capitalized
-                    }
-                    data2 = data2.dropFirst(39)
-                    data?.documentNumber = String(data2.prefix(9))
-                    data2 = data2.dropFirst(9)
-                    data?.docNumCheckDigit = String(data2.prefix(1))
-                    data2 = data2.dropFirst(1)
-                    data?.nationality = Constant.getNatiolityFromCode(countryCode: String(data2.prefix(3)))
-                    data2 = data2.dropFirst(3)
-                    //data?.dateOfBirth = String(data2.prefix(6))
-                    let birthDate = String(data2.prefix(6))
-                    data2 = data2.dropFirst(6)
-                    data?.dateOfBirthCheckDigit = String(data2.prefix(1))
-                    data2 = data2.dropFirst(1)
-                    data?.sex = String(data2.prefix(1))
-                    data2 = data2.dropFirst(1)
-                    //data?.dateOfExpiry = String(data2.prefix(6))
-                    let expireDate = String(data2.prefix(6))
-                    data2 = data2.dropFirst(6)
-                    data?.dateOfExpiryCheckDigit = String(data1.prefix(1))
-                    data2 = data2.dropFirst(1)
-                    data?.optionalData = String(data2.dropLast(3))
-                    
-                    // calculate date of birth reference from ICAO Standard
-                    /*
-                     If Birth Date > Current Year = 19
-                     If Birth Date <= Current  Yera = 20
-                     */
-                    let currentYear = Calendar(identifier: .gregorian).component(.year, from: Date())
-                    if Int(birthDate.prefix(2))! > (currentYear % 100) {
-                        data?.dateOfBirth = "19" + birthDate
-                    }else{
-                        data?.dateOfBirth = "20" + birthDate
-                    }
-                    
-                    // calculate date of expire reference from ICAO Standard
-                    if let d = data?.dateOfIssue,data?.dateOfIssue != "",let issueYear = Int(d.prefix(4).dropFirst(2)) {
-                        let issueYear = Int(d.prefix(4).dropFirst(2))
-                        let exYear = Int(expireDate.prefix(2))
-                        if abs(issueYear! - exYear!) <= 10  {
-                            data?.dateOfExpiry = "20" + expireDate
-                        }else{
-                            data?.dateOfExpiry = "19" + expireDate
-                        }
-                    }else{
-                        let exYear = Int(expireDate.prefix(2))
-                        if exYear! >= 40 {
-                            data?.dateOfExpiry = "19" + expireDate
-                        }else{
-                            data?.dateOfExpiry = "20" + expireDate
-                        }
-                    }
-                    
-                    print("Date of expire : ")
-                    print(data?.dateOfExpiry ?? "")
-                    
-                    let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
-                    if exp! {
-                        print("Document is expried")
-                        data?.expireFlag = "Y"
-                    }else{
-                        print("Document is not expire")
-                        data?.expireFlag = "N"
-                    }
-                    
-                    
-                    print("\n")
-                    print("Data Group 1 Data : ")
-                    print("Document Type : Passport" )
-                    print("countyCode : \(data?.countryCode ?? "")")
-                    print("Issue State : \(data?.issueState ?? "")")
-                    print("Fullname : \(data?.holderFullName ?? "")")
-                    print("Firstname : \(data?.holderFirstName ?? "")")
-                    print("Middlename : \(data?.holderMiddleName ?? "")")
-                    print("Lastname : \(data?.holderLastName ?? "")")
-                    print("Document number : \(data?.documentNumber ?? "")")
-                    print("Nationality : \(data?.nationality ?? "")")
-                    print("Birth Date : \(data?.dateOfBirth ?? "")")
-                    print("Expiry Date : \(data?.dateOfExpiry ?? "")")
-                    print("Sex : \(data?.sex ?? "")")
-                    print("Optional Data : \(data?.optionalData ?? "")")
-                    print("\n")
-                    
-                }else{
-                    print("LIB >>>> COMPARE RES APDU READ DG1 FAIL")
-                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG1 FAIL",isError:true)
-                } // end of verify cc read dg1
-                
-            }else{
-                print("LIB >>>> COMPARE RES APDU GET LEN DG1 FAIL")
-                delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU GET LEN DG1 FAIL",isError: true)
-            } // end of verify get dg1 len
+        incrementSSCP()
+        guard VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: "COMPARE RES APDU SELECT DG1 FAIL")
+            return
+        }
+        
+        
+        // Step 3 : Send APDU Read Binary for get length DG data
+        incrementSSCP()
+        apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "04", SSC: SSCP, SKmac: SKmac)
+        res = await sendAPDU(apdu: apdu, description: "GET LEN DG1")
+        
+        // Step 4 : Verify Res Apdu get len DG1
+        incrementSSCP()
+        guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: " COMPARE RES APDU GET LEN DG1 FAIL")
+            return
+        }
+        
+        // Step 5 : Get Len of DG1 from Response
+        let len = CalculateLenDG1(APDU:res, SKenc: SKenc)
+        print("LIB >>>> DG1 LEN : " + len)
+        
+        
+        // Step 6 : Construct APDU For Read DG1 Data
+        incrementSSCP()
+        apdu = self.ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "05", HexLength:len , SSC: SSCP, SKmac: SKmac)
+        res = await sendAPDU(apdu: apdu, description: "READ DG1")
+
+        
+        // Step 7 : Verify RES APDU Read Data DG1
+        incrementSSCP()
+        guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: "COMPARE RES APDU READ DG1 FAIL")
+            return
+        }
+        
+        
+        // Step 8 : Seperate Data
+        let data1 = GetDataDG1(APDU: res, SKenc: SKenc)
+        print("LIB >>>> DG1 : " + data1)
+        data?.documentCode = String(data1.prefix(2))
+        var data2 = data1.dropFirst(2)
+        data?.issueState = Constant.getCountryFromCode(countryCode: String(data2.prefix(3)))
+        data?.countryCode = String(data2.prefix(3))
+        data2 = data2.dropFirst(3)
+        data?.holderFullName = String(data2.prefix(31)).capitalized
+        let fullName = String(data2.prefix(31))
+        print(data?.holderFullName ?? "None")
+        let splitname = fullName.split(separator: "<", omittingEmptySubsequences: false)
+        print(splitname)
+        data?.holderMiddleName = String((splitname[1])).capitalized
+        data?.holderLastName = String((splitname[0])).capitalized
+        if splitname[3] != "" {
+            data?.holderFirstName = String(splitname[2] + " " + splitname[3]).capitalized
         }else{
-            print("LIB >>>> COMPARE RES APDU SELECT DG1 FAIL")
-            delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG1 FAIL",isError: true)
-        } // end of verify select dg1
+            data?.holderFirstName = String((splitname[2])).capitalized
+        }
+        data2 = data2.dropFirst(39)
+        data?.documentNumber = String(data2.prefix(9))
+        data2 = data2.dropFirst(9)
+        data?.docNumCheckDigit = String(data2.prefix(1))
+        data2 = data2.dropFirst(1)
+        data?.nationality = Constant.getNatiolityFromCode(countryCode: String(data2.prefix(3)))
+        data2 = data2.dropFirst(3)
+        //data?.dateOfBirth = String(data2.prefix(6))
+        let birthDate = String(data2.prefix(6))
+        data2 = data2.dropFirst(6)
+        data?.dateOfBirthCheckDigit = String(data2.prefix(1))
+        data2 = data2.dropFirst(1)
+        data?.sex = String(data2.prefix(1))
+        data2 = data2.dropFirst(1)
+        //data?.dateOfExpiry = String(data2.prefix(6))
+        let expireDate = String(data2.prefix(6))
+        data2 = data2.dropFirst(6)
+        data?.dateOfExpiryCheckDigit = String(data1.prefix(1))
+        data2 = data2.dropFirst(1)
+        data?.optionalData = String(data2.dropLast(3))
         
-        print("""
+        // calculate date of birth reference from ICAO Standard
+        /*
+         If Birth Date > Current Year = 19
+         If Birth Date <= Current  Yera = 20
+         */
+        let currentYear = Calendar(identifier: .gregorian).component(.year, from: Date())
+        if Int(birthDate.prefix(2))! > (currentYear % 100) {
+            data?.dateOfBirth = "19" + birthDate
+        }else{
+            data?.dateOfBirth = "20" + birthDate
+        }
         
-        #####################################
-                END READ DATA GROUP 1 
-        #####################################
+        // calculate date of expire reference from ICAO Standard
+        if let d = data?.dateOfIssue,data?.dateOfIssue != "",let issueYear = Int(d.prefix(4).dropFirst(2)),let exYear = Int(expireDate.prefix(2)) {
+            if abs(issueYear - exYear) <= 10  {
+                data?.dateOfExpiry = "20" + expireDate
+            }else{
+                data?.dateOfExpiry = "19" + expireDate
+            }
+        }else{
+            let exYear = Int(expireDate.prefix(2))
+            if exYear! >= 40 {
+                data?.dateOfExpiry = "19" + expireDate
+            }else{
+                data?.dateOfExpiry = "20" + expireDate
+            }
+        }
         
-        """)
+        print("Date of expire : ")
+        print(data?.dateOfExpiry ?? "")
+        
+        let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
+        if exp! {
+            print("Document is expried")
+            data?.expireFlag = "Y"
+        }else{
+            print("Document is not expire")
+            data?.expireFlag = "N"
+        }
+        
+        
+        print("\n")
+        print("Data Group 1 Data : ")
+        print("Document Type : Passport" )
+        print("countyCode : \(data?.countryCode ?? "")")
+        print("Issue State : \(data?.issueState ?? "")")
+        print("Fullname : \(data?.holderFullName ?? "")")
+        print("Firstname : \(data?.holderFirstName ?? "")")
+        print("Middlename : \(data?.holderMiddleName ?? "")")
+        print("Lastname : \(data?.holderLastName ?? "")")
+        print("Document number : \(data?.documentNumber ?? "")")
+        print("Nationality : \(data?.nationality ?? "")")
+        print("Birth Date : \(data?.dateOfBirth ?? "")")
+        print("Expiry Date : \(data?.dateOfExpiry ?? "")")
+        print("Sex : \(data?.sex ?? "")")
+        print("Optional Data : \(data?.optionalData ?? "")")
+        print("\n")
+        
+
     }
     
     // MARK: - DG1 DATA MANAGEMENT
@@ -855,254 +869,264 @@ public class PassportController
         #####################################
         
         """)
+        
+        defer{
+            
+            print("""
+            
+            #####################################
+                   END READ DATA GROUP 2
+            #####################################
+            
+            """)
+            
+            
+        }
+        
 
         // Step 1 : Consruct APDU for SELECT DG2
-        SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
+        //SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
+        incrementSSCP()
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG2.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
-        //print("LIB >>>> (APDU CMD SELECT DG2) >>>> : " + apdu)
-        print("LIB >>>> (APDU CMD SELECT DG2) >>>> ")
-        var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-        print("LIB <<<< (APDU RES SELECT DG2) <<<< : " + res.uppercased())
+        var res = await sendAPDU(apdu: apdu, description: "SELECT DG2")
         
         // Step 2 : Verify RES APDU Select DG2
-        SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-        var verify = VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-        if verify {
+        incrementSSCP()
+        guard VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: "COMPARE RES APDU SELECT DG2 FAIL")
+            return
+        }
+        
+        
+        // Step 3 : Send APDU Get Len DG2
+        incrementSSCP()
+        apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "30", SSC: SSCP, SKmac: SKmac)
+        res = await sendAPDU(apdu: apdu, description: "GET LEN DG2")
+
+        
+        // Step 4 : Verify Res APDU Get Len DG2
+        incrementSSCP()
+        guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: "COMPARE RES APDU GET LEN DG2 FAIL")
+            return
+        }
+        
+        
+        let len = CalculateLenDG2(APDU:res, SKenc: SKenc)
+        print("LIB >>>> DG2 LEN : " + len[0])
+        print("LIB >>>> DG2 OFFSET : " + len[1])
+        
+        var reqLenHex:String = len[0]
+        //var reqLenHex:String = "6700"
+        
+        // Step 5 : Get All Data DG2
+        incrementSSCP()
+        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
+        res = await sendAPDU(apdu: apdu, description: "READ FULL LEN DG2")
+        
+        
+        // Step 6 : Verify Res Apdu Read DG2
+        incrementSSCP()
+        guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: "COMPARE RES APDU READ DG2 FAIL")
+            return
+        }
+        
+        var r:String = ""
+        var rr:String = ""
+        
+        
+        // MARK: - TEST
+        
+        // Adding : Handle chip limit request data length.
+        
+        if res.uppercased().suffix(4) == "6700" {
             
-            // Step 3 : Send APDU Get Len DG2
-            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-            apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "30", SSC: SSCP, SKmac: SKmac)
-            print("LIB >>>> (APDU CMD GET LEN DG2) >>>> ")
-            //print("LIB >>>> (APDU CMD GET LEN DG2) >>>> : " + apdu)
-            res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-            print("LIB <<<< (APDU RES GET LEN DG2) <<<< : " + res.uppercased())
+            reqLenHex = "0400"
+            incrementSSCP()
+            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
+            res = await sendAPDU(apdu: apdu, description: "READ DG2 WITH LEN 1024")
             
-            // Step 4 : Verify Res APDU Get Len DG2
-            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-            verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-            if verify {
-                let len = CalculateLenDG2(APDU:res, SKenc: SKenc)
-                print("LIB >>>> DG2 LEN : " + len[0])
-                print("LIB >>>> DG2 OFFSET : " + len[1])
+            incrementSSCP()
+            guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+                handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL")
+                data?.faceImage = ""
+                return
+            }
+            
+            
+            if res.uppercased().suffix(4) == "6700" {
                 
-                var reqLenHex:String = len[0]
-                
-                // Step 5 : Get All Data DG2
-                SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
+                reqLenHex = "0200"
+                incrementSSCP()
                 apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
-                //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
-                print("LIB >>>> (APDU CMD READ DG2) >>>> ")
-                res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES READ DG2) <<<< : " + res.uppercased())
+                res = await sendAPDU(apdu: apdu, description: "READ DG2 WITH LEN 512")
+
                 
-                // Adding : Handle chip limit request data length.
-                
-                if res.uppercased().suffix(4) == "6700" {
-                    
-                    reqLenHex = "0400"
-                    SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                    apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
-                    //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
-                    print("LIB >>>> (APDU CMD READ DG2 WITH LEN 1024) >>>> ")
-                    res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                    print("LIB <<<< (APDU RES READ DG2 WITH LEN 1024) <<<< : " + res.uppercased())
-                    
-                    if res.uppercased().suffix(4) == "6700" {
-                        
-                        reqLenHex = "0200"
-                        SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
-                        //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
-                        print("LIB >>>> (APDU CMD READ DG2 WITH LEN 512) >>>> ")
-                        res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                        print("LIB <<<< (APDU RES READ DG2 WITH LEN 512) <<<< : " + res.uppercased())
-                        
-                    }
+                incrementSSCP()
+                guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+                    handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL")
+                    data?.faceImage = ""
+                    return
                 }
                 
-                
-                // Step 6 : Verify Res Apdu Read DG2
-                SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
-                verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-                var r:String = ""
-                var rr:String = ""
-                if verify {
-                    let arr = GetDataDG2(APDU: res, SKenc: SKenc)
-                    r = arr[0]
-                    rr = arr[1]
-                    let allLen = (UInt32(len[0],radix: 16)! * 2) - 100 //- 1000
-                    print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
-                    if r.count < allLen {
+            }
         
-                        print("LIB >>>> DG2 FOUND REMAIN")
-                        var re:String = ""
-                        var re2:String = ""
-                        // Step 7 : Get Remain Data DG2
-                        SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                        //apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
-                        //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
-                        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
-                        print("LIB >>>> (APDU CMD READ DG2) >>>> ")
-                        res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                        print("LIB <<<< (APDU RES READ DG2) <<<< : " + res.uppercased())
 
-                        // Step 6 : Verify Res Apdu Read DG2
-                        SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
-                        verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-                        if verify {
-                            let arr = GetRemainDataDG2(APDU: res, SKenc: SKenc)
-                            re.append(arr[0])
-                            re2.append(arr[1])
-                        }else{
-                            print("LIB >>>> COMPARE RES APDU READ REMAIN DG2 FAIL")
-                            delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ REMAIN DG2 FAIL",isError: true)
-                        } // end of verify res apdu read ramin dg2
-                        
-                        // Loop for get all remain data
-                        while re.count < allLen {
-                            
-                            // Step 7 : Get Remain Data DG2
-                            let new = re.count/2
-                            var newOffset = String(new,radix: 16)
-                            while newOffset.count < 4 {
-                                newOffset = "0" + newOffset
-                            }
-                            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
-                            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: String(newOffset.dropLast(2)), HexOffset: String(newOffset.dropFirst(2)), HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
-                            print("LIB >>>> (APDU CMD READ DG2) >>>> ")
-                            //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
-                            res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                            print("LIB <<<< (APDU RES READ DG2) <<<< : " + res.uppercased())
-                            
-                            // Step 6 : Verify Res Apdu Read DG2
-                            SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
-                            verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
-                            if verify {
-                                let arr = GetRemainDataDG2(APDU: res, SKenc: SKenc)
-                                re.append(arr[0])
-                                re2.append(arr[1])
-                            }else{
-                                print("LIB >>>> COMPARE RES APDU READ REMAIN DG2 FAIL")
-                                delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ REMAIN DG2 FAIL",isError: true)
-                                data?.faceImage = ""
-                                break
-                            } // end of verify res apdu read ramin dg2
-                        }
-                        // JP2 = 170 = Format
-                        //var re1 = String(re.dropFirst(170))
-                        var re1 = ""
-                        if util?.FindIndexOf(inputString: re, target: "0000000C6A502020") != -1 {
-                            re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "0000000C6A502020"))!))
-                            if let image = UIImage(data: re1.hexadecimal!) {
-                                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                                print(re)
-                                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                                print(re1)
-                                let djpg = image.jpegData(compressionQuality: 1.0)
-                                data?.faceImage = djpg?.base64EncodedString()
-                            }else{
-                                data?.faceImage = ""
-                            }
-                        }else if util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946") != -1{
-                            
-                            // JFIF Format
-                            re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946"))!))
-                            print("LIB >>>> FACE DATA WITH TEMPLATE (JFIF FORMAT) : ")
-                            print(re)
-                            print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
-                            print(re1)
-                            
-                            // Function below is used for Drop trailing "FFFF"
-                            //let re2 = String(re1.dropLast(128))
-                            //print("Below is RE2")
-                            //print(re2)
-                            if let image = UIImage(data: re1.hexadecimal!){
-                                let djpg = image.jpegData(compressionQuality: 1.0)
-                                data?.faceImage = djpg?.base64EncodedString()
-                            }else{
-                                data?.faceImage = ""
-                            }
-                            
-                        }else{
-                            data?.faceImage = ""
-                        }
-                         
-                    }else{
-                        //let r2 = r.dropFirst(92)
-                        if util?.FindIndexOf(inputString: r, target: "0000000C6A502020") != -1 {
-                            
-                            let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "0000000C6A502020"))!))
-                            //let rr2 = rr.dropFirst(92)
-                            let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "0000000C6A502020"))!))
-                            if let image = UIImage(data: String(r2).hexadecimal!){
-                                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                                print(r)
-                                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                                print(r2)
-                                let djpg = image.jpegData(compressionQuality: 1.0)
-                                data?.faceImage = djpg?.base64EncodedString()
-                            }else if let image = UIImage(data: String(rr2).hexadecimal!){
-                                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                                print(r)
-                                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                                print(r2)
-                                let djpg = image.jpegData(compressionQuality: 1.0)
-                                data?.faceImage = djpg?.base64EncodedString()
-                            }else{
-                                data?.faceImage = ""
-                            }
-                            
-                        }else if util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946") != -1 {
-//                            let r2 = r.dropFirst(74)
-//                            let rr2 = rr.dropFirst(74)
-                            let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946"))!))
-                            let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "FFD8FFE000104A464946"))!))
-                            if let image = UIImage(data:String(r2).hexadecimal!){
-                                print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
-                                print(r)
-                                print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
-                                print(r2)
-                                let djpg = image.jpegData(compressionQuality: 1.0)
-                                data?.faceImage = djpg?.base64EncodedString()
-                            }else if let image = UIImage(data: String(rr2).hexadecimal!){
-                                print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
-                                print(r)
-                                print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
-                                print(r2)
-                                let djpg = image.jpegData(compressionQuality: 1.0)
-                                data?.faceImage = djpg?.base64EncodedString()
-                            }
-                            else{
-                                data?.faceImage = ""
-                            }
-                        }else{
-                            data?.faceImage = ""
-                        }
-                    } // end of get dg2 data
-                    
+        }
+        
+        // MARK: - Test End
+        
+        var arr = GetDataDG2(APDU: res, SKenc: SKenc)
+        r = arr[0]
+        rr = arr[1]
+        let allLen = (UInt32(len[0],radix: 16)! * 2) - 100 //- 1000
+        print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
+        
+        guard r.count < allLen else {
+            //let r2 = r.dropFirst(92)
+            if util?.FindIndexOf(inputString: r, target: "0000000C6A502020") != -1 {
+                
+                let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "0000000C6A502020"))!))
+                //let rr2 = rr.dropFirst(92)
+                let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "0000000C6A502020"))!))
+                if let image = UIImage(data: String(r2).hexadecimal!){
+                    print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+                    print(r)
+                    print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+                    print(r2)
+                    let djpg = image.jpegData(compressionQuality: 1.0)
+                    data?.faceImage = djpg?.base64EncodedString()
+                }else if let image = UIImage(data: String(rr2).hexadecimal!){
+                    print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+                    print(r)
+                    print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+                    print(r2)
+                    let djpg = image.jpegData(compressionQuality: 1.0)
+                    data?.faceImage = djpg?.base64EncodedString()
                 }else{
-                    print("LIB >>>> COMPARE RES APDU READ DG2 FAIL")
-                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG2 FAIL",isError: true)
                     data?.faceImage = ""
-                } // end of verify res apdu read dg2
+                }
                 
+            }else if util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946") != -1 {
+//                let r2 = r.dropFirst(74)
+//                let rr2 = rr.dropFirst(74)
+                let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946"))!))
+                let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "FFD8FFE000104A464946"))!))
+                if let image = UIImage(data:String(r2).hexadecimal!){
+                    print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+                    print(r)
+                    print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+                    print(r2)
+                    let djpg = image.jpegData(compressionQuality: 1.0)
+                    data?.faceImage = djpg?.base64EncodedString()
+                }else if let image = UIImage(data: String(rr2).hexadecimal!){
+                    print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+                    print(r)
+                    print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+                    print(r2)
+                    let djpg = image.jpegData(compressionQuality: 1.0)
+                    data?.faceImage = djpg?.base64EncodedString()
+                }
+                else{
+                    data?.faceImage = ""
+                }
             }else{
-                print("LIB >>>> COMPARE RES APDU GET LEN DG2 FAIL")
-                delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU GET LEN DG2 FAIL",isError: true)
-            } // end of verify res apdu get len dg2
+                data?.faceImage = ""
+            }
+            return
+        }
+        
+        print("LIB >>>> DG2 FOUND REMAIN")
+        var re:String = ""
+        var re2:String = ""
+        
+        // Step 7 : Get Remain Data DG2
+        incrementSSCP()
+        //apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
+        //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
+        apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
+        res = await sendAPDU(apdu: apdu, description: "READ REAMIN DG2")
 
+        // Step 6 : Verify Res Apdu Read DG2
+        incrementSSCP()
+        guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            handleError(description: "COMPARE RES APDU READ REMAIN DG2 FAIL")
+            data?.faceImage = ""
+            return
+        }
+
+        arr = GetRemainDataDG2(APDU: res, SKenc: SKenc)
+        re.append(arr[0])
+        re2.append(arr[1])
+        
+        // Loop for get all remain data
+        while re.count < allLen {
+            
+            // Step 7 : Get Remain Data DG2
+            let new = re.count/2
+            var newOffset = String(new,radix: 16)
+            while newOffset.count < 4 {
+                newOffset = "0" + newOffset
+            }
+            incrementSSCP()
+            apdu = ConstructAPDUforReadBinaryExtend(HexBlock: String(newOffset.dropLast(2)), HexOffset: String(newOffset.dropFirst(2)), HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
+            res = await sendAPDU(apdu: apdu, description: "READ REMAIN DG2")
+
+            
+            // Step 8 : Verify Res Apdu Read DG2
+            incrementSSCP()
+            guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+                handleError(description: "COMPARE RES APDU READ REMAIN DG2 FAIL")
+                data?.faceImage = ""
+                break
+            }
+            
+            arr = GetRemainDataDG2(APDU: res, SKenc: SKenc)
+            re.append(arr[0])
+            re2.append(arr[1])
+
+        }
+        
+        // JP2 = 170 = Format
+        //var re1 = String(re.dropFirst(170))
+        var re1 = ""
+        if util?.FindIndexOf(inputString: re, target: "0000000C6A502020") != -1 {
+            re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "0000000C6A502020"))!))
+            if let image = UIImage(data: re1.hexadecimal!) {
+                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+                print(re)
+                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+                print(re1)
+                let djpg = image.jpegData(compressionQuality: 1.0)
+                data?.faceImage = djpg?.base64EncodedString()
+            }else{
+                data?.faceImage = ""
+            }
+        }else if util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946") != -1{
+            
+            // JFIF Format
+            re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946"))!))
+            print("LIB >>>> FACE DATA WITH TEMPLATE (JFIF FORMAT) : ")
+            print(re)
+            print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+            print(re1)
+            
+            // Function below is used for Drop trailing "FFFF"
+            //let re2 = String(re1.dropLast(128))
+            //print("Below is RE2")
+            //print(re2)
+            if let image = UIImage(data: re1.hexadecimal!){
+                let djpg = image.jpegData(compressionQuality: 1.0)
+                data?.faceImage = djpg?.base64EncodedString()
+            }else{
+                data?.faceImage = ""
+            }
+            
         }else{
-            print("LIB >>>> COMPARE RES APDU SELECT DG2 FAIL")
-            delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG2 FAIL",isError: true)
-        } // end of verify res apdu select dg2
+            data?.faceImage = ""
+        }
         
-        print("""
-        
-        #####################################
-               END READ DATA GROUP 2 
-        #####################################
-        
-        """)
 
     }
     
@@ -1427,8 +1451,8 @@ public class PassportController
                         // Step 6 : Loop for each data
                         data?.personalNumber = SplitDataWithTags(dg: dg11, Tag: "5F10")
                         data?.fullDateOfBirth = SplitDataWithTags(dg: dg11, Tag: "5F2B")
-                        data?.placeOfBirth = SplitDataWithTags(dg: dg11, Tag: "5F11").capitalized
-                        data?.permanentAddress = SplitDataWithTags(dg: dg11, Tag: "5F42")
+                        data?.placeOfBirth = SplitDataWithTags(dg: dg11, Tag: "5F11").replacingOccurrences(of: "<", with: " ").capitalized
+                        data?.permanentAddress = SplitDataWithTags(dg: dg11, Tag: "5F42").replacingOccurrences(of: "<", with: " ").capitalized
                         data?.telephone = SplitDataWithTags(dg: dg11, Tag: "5F12")
                         data?.profession = SplitDataWithTags(dg: dg11, Tag: "5F13")
                         data?.title = SplitDataWithTags(dg: dg11, Tag: "5F14").capitalized
@@ -1507,6 +1531,18 @@ public class PassportController
         #####################################
         
         """)
+        
+        defer{
+            
+            print("""
+            
+            #####################################
+                  End READ DATA GROUP 12
+            #####################################
+            
+            """)
+            
+        }
         
         // Step 1 : Consruct APDU for SELECT DG11
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
@@ -1593,13 +1629,6 @@ public class PassportController
             
         }
         
-        print("""
-        
-        #####################################
-              End READ DATA GROUP 12 
-        #####################################
-        
-        """)
         
     }
     
