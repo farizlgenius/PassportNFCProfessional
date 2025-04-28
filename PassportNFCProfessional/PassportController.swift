@@ -936,10 +936,9 @@ public class PassportController
         var rr:String = ""
         
         
-        // MARK: - TEST
+        // MARK: - Old Chip Handle
         
         // Adding : Handle chip limit request data length.
-        
         if res.uppercased().suffix(4) == "6700" {
             
             reqLenHex = "0400"
@@ -965,7 +964,7 @@ public class PassportController
                 
                 incrementSSCP()
                 guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-                    handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL")
+                    handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 512 KENGTH FAIL")
                     data?.faceImage = ""
                     return
                 }
@@ -975,7 +974,7 @@ public class PassportController
 
         }
         
-        // MARK: - Test End
+        // MARK: - Old Chip Handle End
         
         var arr = GetDataDG2(APDU: res, SKenc: SKenc)
         r = arr[0]
