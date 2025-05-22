@@ -361,7 +361,12 @@ public class PassportController
             if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
                 if util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08") == -1 {
                     if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
-                        return false
+                        if util?.FindIndexOf(inputString: String(RAPDU), target: "990267008E08") == -1 {
+                            return false
+                        }else{
+                            DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990267008E08"))!
+                            print(DropIndex)
+                        }
                     }else{
                         DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
                         print(DropIndex)
@@ -383,8 +388,20 @@ public class PassportController
             let CC = self.util?.MessageAuthenticationCodeMethodOne(input: K, key: Key)
             if util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08") == -1 {
                 if util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08") == -1 {
-                    DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
-                    print(DropIndex)
+                    //
+                    if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
+                        if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
+                            DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990267008E08"))!
+                            print(DropIndex)
+                        }else{
+                            DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
+                            print(DropIndex)
+                        }
+                    }else{
+                        DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
+                        print(DropIndex)
+                    }
+                    
                 }else{
                     DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
                     print(DropIndex)
