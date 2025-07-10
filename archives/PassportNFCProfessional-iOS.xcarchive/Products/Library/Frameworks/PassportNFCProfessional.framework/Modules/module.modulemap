@@ -1,0 +1,11 @@
+framework module PassportNFCProfessional {
+  umbrella header "PassportNFCProfessional.h"
+  export *
+
+  module * { export * }
+}
+
+module PassportNFCProfessional.Swift {
+  header "PassportNFCProfessional-Swift.h"
+  requires objc
+}

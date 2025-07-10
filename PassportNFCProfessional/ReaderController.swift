@@ -30,10 +30,10 @@ public class ReaderController
         let readerName = getReader()
         slot = await mngr?.getSlot(withName: readerName)
         if slot != nil {
-            print("LIB >>>> INIT SMART CARD SUCCESS")
+//            print("LIB >>>> INIT SMART CARD SUCCESS")
             return true
         }
-        print("INIT SMART CARD UNSUCCESS")
+//        print("INIT SMART CARD UNSUCCESS")
         delegate?.onErrorOccur(errorMessage: "INIT SMART CARD UNSUCCESS", isError: true)
         return false
     }
@@ -71,12 +71,12 @@ public class ReaderController
                 }
             }
             
-            print("LIB >>>> NO READER ATTACHED")
+//            print("LIB >>>> NO READER ATTACHED")
             delegate?.onErrorOccur(errorMessage: "NO READER ATTACHED", isError: true)
             return "No Reader"
             
         }else{
-            print("LIB >>>> NO READER ATTACHED")
+//            print("LIB >>>> NO READER ATTACHED")
             delegate?.onErrorOccur(errorMessage: "NO READER ATTACHED", isError: true)
             return "No Reader"
         }
@@ -88,15 +88,15 @@ public class ReaderController
         card = slot!.makeSmartCard()
         if let card = card {
             do {
-                print("LIB >>>> BEGIN CARD SESSION SUCCESS")
+//                print("LIB >>>> BEGIN CARD SESSION SUCCESS")
                 return try await card.beginSession()
             } catch {
-                print("LIB >>>> BEGIN CARD SESSION FAIL && NO CARD FOUND")
+//                print("LIB >>>> BEGIN CARD SESSION FAIL && NO CARD FOUND")
                 //delegate?.onErrorOccur(errorMessage: "Begin Card Session Fail, No Smart Card Found", isError: true)
                 return false
             }
         }else{
-            print("LIB >>>> MAKE SMART CARD SLOT FAIL")
+//            print("LIB >>>> MAKE SMART CARD SLOT FAIL")
             //delegate?.onErrorOccur(errorMessage: "Make Smart Card Slot Fail !!!", isError: true)
             return false
         }
@@ -121,9 +121,9 @@ public class ReaderController
             card = nil
             slot = nil
             //mngr = nil
-            print("LIB >>>> END CARD SESSION SUCCESS")
+//            print("LIB >>>> END CARD SESSION SUCCESS")
         }else{
-            print("LIB >>> END CARD SESSION FAIL")
+//            print("LIB >>> END CARD SESSION FAIL")
         }
         
     }

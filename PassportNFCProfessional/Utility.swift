@@ -295,7 +295,7 @@ class Utility{
 //           print("Ending index of '\(target)' is: \(endingIndex)")
             return startingIndex
         } else {
-            print("LIB >>>> NOT FOUND \(target.uppercased())")
+//            print("LIB >>>> NOT FOUND \(target.uppercased())")
             return -1
         }
     }
@@ -308,7 +308,7 @@ class Utility{
 //           print("Ending index of '\(target)' is: \(endingIndex)")
             return endingIndex
         } else {
-            print("LIB >>>> NOT FOUND \(target.uppercased())")
+//            print("LIB >>>> NOT FOUND \(target.uppercased())")
             return -1
         }
     }
@@ -335,19 +335,19 @@ class Utility{
 
         // Convert string to Date
         guard let expDate = dateFormatter.date(from: expirationDate) else {
-            print("Invalid date format")
+//            print("Invalid date format")
             return false
         }
 
         let currentDate = Date()
-        print("Expiration Date : ")
-        print(expirationDate)
-        print("Current Date : ")
-        print(currentDate)
-        print("Expire Date : ")
-        print(expDate)
-        print("Result : ")
-        print(currentDate > expDate)
+//        print("Expiration Date : ")
+//        print(expirationDate)
+//        print("Current Date : ")
+//        print(currentDate)
+//        print("Expire Date : ")
+//        print(expDate)
+//        print("Result : ")
+//        print(currentDate > expDate)
         return currentDate > expDate // Returns true if expired, false otherwise
     }
     

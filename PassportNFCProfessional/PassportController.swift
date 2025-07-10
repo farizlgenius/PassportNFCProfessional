@@ -106,9 +106,9 @@ public class PassportController
     }
     
     func sendAPDU(apdu:String,description:String) async -> String{
-        print("LIB >>>> (APDU CMD \(description) >>>> : " + apdu)
+//        print("LIB >>>> (APDU CMD \(description) >>>> : " + apdu)
         let res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-        print("LIB <<<< (APDU RES \(description) <<<< : " + res.uppercased())
+//        print("LIB <<<< (APDU RES \(description) <<<< : " + res.uppercased())
         return res
         
     }
@@ -122,26 +122,26 @@ public class PassportController
     //MARK: - BASIC ACCESS CONTROL
     func BasicAccessControl(mrz:String) async -> Bool {
         
-        print("""
-        
-        #####################################
-          BEGIN EXTERNAL AUTHENTICATION STEP 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//          BEGIN EXTERNAL AUTHENTICATION STEP 
+//        #####################################
+//        
+//        """)
         
         // Step 1 : Hash MRZ Data with SHA1 Algorithm
         let mrzData = mrz.data(using: .utf8)
         let Kseed = util?.sha1HashData(data: mrzData!).prefix(32)
-        print("LIB >>>> Kseed : " + Kseed!)
+//        print("LIB >>>> Kseed : " + Kseed!)
         
         // Step 2 / 3 : Calculate Kenc and Kmac from Kseed and adjust Parity
         let Key1 = util?.CalculateKey(Kseed: String(Kseed!))
         let Kenc = Key1![0]
         let Kmac = Key1![1]
         
-        print("LIB >>>> Kenc : " + Kenc!)
-        print("LIB >>>> Kmac : " + Kmac!)
+//        print("LIB >>>> Kenc : " + Kenc!)
+//        print("LIB >>>> Kmac : " + Kmac!)
         
         // Step 4 : Initial SmartCard
         
@@ -155,22 +155,22 @@ public class PassportController
             
             // Step 5 : Transmit APDU for SELECT DF of Passport
             //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
-            print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
+//            print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
             var res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR2)
-            print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
+//            print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
             
             
             if res == "nil" {
                 
-                print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
+//                print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
                 delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError:true)
-                print("""
-                
-                #####################################
-                              THE END !!!
-                #####################################
-                
-                """)
+//                print("""
+//                
+//                #####################################
+//                              THE END !!!
+//                #####################################
+//                
+//                """)
                 rmngr.endCardSession()
                 return false
             }else{
@@ -179,26 +179,26 @@ public class PassportController
                     
                     // Step 5.1 : Transmit APDU for SELECT DF of Passport
                     //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
-                    print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
+//                    print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
                     res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR)
-                    print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
+//                    print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
                     
                 }
                 
                 // Step 6 : Transmit Get Challenge APDU
                 //print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> : " + GETCHALLENGESTR)
-                print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> ")
+//                print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> ")
                 res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: GETCHALLENGESTR)
-                print("LIB <<<< (APDU RES GET CHALLENGE) <<<< : " + res.uppercased())
+//                print("LIB <<<< (APDU RES GET CHALLENGE) <<<< : " + res.uppercased())
                 if res.count <= 4 {
-                    print("LIB >>>> GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())")
-                    print("""
-                    
-                    #####################################
-                                  THE END !!!
-                    #####################################
-                    
-                    """)
+//                    print("LIB >>>> GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())")
+//                    print("""
+//                    
+//                    #####################################
+//                                  THE END !!!
+//                    #####################################
+//                    
+//                    """)
                     delegate?.onErrorOccur(errorMessage: "GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())",isError: true)
                     rmngr.endCardSession()
                     return false
@@ -211,52 +211,52 @@ public class PassportController
                 
                 // Step 8 : Get S by concatenate RNDIFD + RNDIC + Kifd
                 let S = RNDIFD! + RNDIC + Kifd!
-                print("LIB >>>> S : " + S)
+//                print("LIB >>>> S : " + S)
                 
                 // Step 9 : Get Eifd by Encrypt S with Kenc by 3DES CBC Algorithm
                 let Eifd = util?.TripleDesEncCBC(input: S, key: Kenc!)
-                print("LIB >>>> Eifd : " + Eifd!)
+//                print("LIB >>>> Eifd : " + Eifd!)
                 
                 // Step 10 : Get Mifd by Calculate Message Authentication Code Padding Method 2 over Eifd by Kmac
                 let Mifd = util?.MessageAuthenticationCodeMethodTwo(input: Eifd!, key: Kmac!)
-                print("LIB MSG >>>> Mifd : " + Mifd!)
+//                print("LIB MSG >>>> Mifd : " + Mifd!)
                 
                 // Step 11 : Construct APDU Cmd for do External Authentication Cmd = Eifd concatinate with Mifd
                 let apdu = "0082000028" + Eifd! + Mifd! + "28"
                 
                 // Step 12 : Send APDU command
                 //print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : " + apdu)
-                print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : ")
+//                print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES EXTERNAL AUTH) <<<< : " + res.uppercased())
+//                print("LIB <<<< (APDU RES EXTERNAL AUTH) <<<< : " + res.uppercased())
                 
                 if res.count <= 4 {
-                    print("LIB >>>> EXTERNAL AUTHENTICATION UNSUCCESS")
-                    print("""
-                    
-                    #####################################
-                                  THE END !!!
-                    #####################################
-                    
-                    """)
+//                    print("LIB >>>> EXTERNAL AUTHENTICATION UNSUCCESS")
+//                    print("""
+//                    
+//                    #####################################
+//                                  THE END !!!
+//                    #####################################
+//                    
+//                    """)
                     delegate?.onErrorOccur(errorMessage: "EXTERNAL AUTHENTICATION UNSUCCESS",isError: true)
                     rmngr.endCardSession()
                     return false
                 }
                 // Step 13 : Get Eic by Cut Off Mic from response and decrypt Eic to get R
                 let Eic = res.uppercased().dropLast(20)
-                print("LIB >>>> Eic : " + Eic)
+//                print("LIB >>>> Eic : " + Eic)
                 let R = util?.TripleDesDecCBC(input: String(Eic), key: Kenc!)
-                print("LIB >>>> R : " + R!)
+//                print("LIB >>>> R : " + R!)
           
                 // Step 14 : Get Kic and SSC from R
                 let Kic = R!.dropFirst(32)
-                print("LIB >>>> Kic : " + Kic)
+//                print("LIB >>>> Kic : " + Kic)
                 let a = R?.dropLast(32)
                 let b = a!.dropLast(16)
                 let c = a!.dropFirst(16)
                 SSCP = String(b.dropFirst(8) + c.dropFirst(8))
-                print("LIB >>>> SSC : " + SSCP)
+//                print("LIB >>>> SSC : " + SSCP)
           
                 // Step 15 : Calculate KSseed by XOR Kic with Kifd
                 let SKseed = util?.XOR(Data1: String(Kic), Data2: Kifd!)
@@ -265,23 +265,23 @@ public class PassportController
                 let SKey = util?.CalculateKey(Kseed: SKseed!)
                 SKenc = SKey![0]!
                 SKmac = SKey![1]!
-                print("LIB >>>> SKenc : " + SKenc)
-                print("LIB >>>> SKmac : " + SKmac)
-          
-                print("""
-                
-                #####################################
-                  END EXTERNAL AUTHENTICATION STEP
-                #####################################
-                
-                """)
+//                print("LIB >>>> SKenc : " + SKenc)
+//                print("LIB >>>> SKmac : " + SKmac)
+//          
+//                print("""
+//                
+//                #####################################
+//                  END EXTERNAL AUTHENTICATION STEP
+//                #####################################
+//                
+//                """)
                 return true
                 
             } // Select DF
             
         }else{
             delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: false)
-            print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
+//            print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
             rmngr.endCardSession()
             return false
         } // Init Card Session
@@ -365,20 +365,20 @@ public class PassportController
                             return false
                         }else{
                             DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990267008E08"))!
-                            print(DropIndex)
+//                            print(DropIndex)
                         }
                     }else{
                         DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
-                        print(DropIndex)
+//                        print(DropIndex)
                     }
                 }else{
                     DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
-                    print(DropIndex)
+//                    print(DropIndex)
                 }
                 
             }else{
                 DropIndex = RAPDU.count - (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
-                print(DropIndex)
+//                print(DropIndex)
             }
             
             var K = SSC + RAPDU.dropLast(DropIndex-8) + "80"
@@ -392,23 +392,23 @@ public class PassportController
                     if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
                         if util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08") == -1 {
                             DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990267008E08"))!
-                            print(DropIndex)
+//                            print(DropIndex)
                         }else{
                             DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
-                            print(DropIndex)
+//                            print(DropIndex)
                         }
                     }else{
                         DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990270018E08"))!
-                        print(DropIndex)
+//                        print(DropIndex)
                     }
                     
                 }else{
                     DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990262828E08"))!
-                    print(DropIndex)
+//                    print(DropIndex)
                 }
             }else{
                 DropIndex = (util?.FindIndexOf(inputString: String(RAPDU), target: "990290008E08"))!
-                print(DropIndex)
+//                print(DropIndex)
             }
             let DO8E = RAPDU.dropFirst(DropIndex+12)
             if CC! == DO8E {
@@ -473,7 +473,7 @@ public class PassportController
     func getDataFromDO87(in input:String) -> String {
         
         let result = CalculateDO87(input)
-        print("LIB >>>> DO87 Data : \(result)")
+//        print("LIB >>>> DO87 Data : \(result)")
         return result
         //return String(input.dropFirst(findIndexAfterPattern(in: input)))
     }
@@ -582,21 +582,21 @@ public class PassportController
     // MARK: - EF.COM
        func readCommon() async -> [String] {
            
-           print("""
-           
-           #####################################
-                   BEGIN READ EF.COM 
-           #####################################
-           
-           """)
+//           print("""
+//           
+//           #####################################
+//                   BEGIN READ EF.COM 
+//           #####################################
+//           
+//           """)
            
            // Step 1 : Construct APDU CMD for SELECT COM
            SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
            var apdu = ConstructAPDUforSelectDF(DG: FileID.Common.rawValue, SKenc: SKenc, SKmac: SKmac, SSCP: SSCP)
-           print("LIB >>>> (APDU CMD SELECT EF.COM) >>>> : " + apdu)
-           print("LIB >>>> (APDU CMD SELECT EF.COM) >>>> ")
+//           print("LIB >>>> (APDU CMD SELECT EF.COM) >>>> : " + apdu)
+//           print("LIB >>>> (APDU CMD SELECT EF.COM) >>>> ")
            var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-           print("LIB <<<< (APDU RES SELECT EF.COM) <<<< : " + res.uppercased())
+//           print("LIB <<<< (APDU RES SELECT EF.COM) <<<< : " + res.uppercased())
            
            // Step 2 : Verify Res Apdu select common
            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -607,9 +607,9 @@ public class PassportController
                SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "FF", SSC: SSCP, SKmac: SKmac)
                //print("LIB >>>> (APDU CMD GET LEN DG1) >>>> : " + apdu)
-               print("LIB >>>> (APDU CMD GET LEN EF.COM) >>>> ")
+//               print("LIB >>>> (APDU CMD GET LEN EF.COM) >>>> ")
                res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-               print("LIB <<<< (APDU RES GET LEN EF.COM) <<<< : " + res.uppercased())
+//               print("LIB <<<< (APDU RES GET LEN EF.COM) <<<< : " + res.uppercased())
                
                // Step 4 : Verify Res Apdu get com
                SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -617,19 +617,19 @@ public class PassportController
                if verify {
                    // Step 5 : Get Len of DG1 from Response
                    let com = GetDataCOM(APDU:res, SKenc: SKenc)
-                   print("\n")
-                   print("DG List : ")
+//                   print("\n")
+//                   print("DG List : ")
                    com.forEach { i in
                        print(DGTAG[i]!)
                    }
-                   print("\n")
-                   print("""
-                   
-                   #####################################
-                           END READ EF.COM 
-                   #####################################
-                   
-                   """)
+//                   print("\n")
+//                   print("""
+//                   
+//                   #####################################
+//                           END READ EF.COM 
+//                   #####################################
+//                   
+//                   """)
                    
                    return com
                }else{
@@ -680,23 +680,23 @@ public class PassportController
     // MARK: - DATA GROUP 1
     func readDG1() async {
 
-        print("""
-        
-        #####################################
-              BEGIN READ DATA GROUP 1 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              BEGIN READ DATA GROUP 1 
+//        #####################################
+//        
+//        """)
         
         defer{
             
-            print("""
-            
-            #####################################
-                    END READ DATA GROUP 1
-            #####################################
-            
-            """)
+//            print("""
+//            
+//            #####################################
+//                    END READ DATA GROUP 1
+//            #####################################
+//            
+//            """)
             
         }
         
@@ -730,7 +730,7 @@ public class PassportController
         
         // Step 5 : Get Len of DG1 from Response
         let len = CalculateLenDG1(APDU:res, SKenc: SKenc)
-        print("LIB >>>> DG1 LEN : " + len)
+//        print("LIB >>>> DG1 LEN : " + len)
         
         
         // Step 6 : Construct APDU For Read DG1 Data
@@ -749,7 +749,7 @@ public class PassportController
         
         // Step 8 : Seperate Data
         let data1 = GetDataDG1(APDU: res, SKenc: SKenc)
-        print("LIB >>>> DG1 : " + data1)
+//        print("LIB >>>> DG1 : " + data1)
         data?.documentCode = String(data1.prefix(2))
         var data2 = data1.dropFirst(2)
         data?.issueState = Constant.getCountryFromCode(countryCode: String(data2.prefix(3)))
@@ -757,9 +757,9 @@ public class PassportController
         data2 = data2.dropFirst(3)
         data?.holderFullName = String(data2.prefix(31)).capitalized
         let fullName = String(data2.prefix(31))
-        print(data?.holderFullName ?? "None")
+//        print(data?.holderFullName ?? "None")
         let splitname = fullName.split(separator: "<", omittingEmptySubsequences: false)
-        print(splitname)
+//        print(splitname)
         data?.holderMiddleName = String((splitname[1])).capitalized
         data?.holderLastName = String((splitname[0])).capitalized
         if splitname[3] != "" {
@@ -816,35 +816,35 @@ public class PassportController
             }
         }
         
-        print("Date of expire : ")
-        print(data?.dateOfExpiry ?? "")
+//        print("Date of expire : ")
+//        print(data?.dateOfExpiry ?? "")
         
         let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
         if exp! {
-            print("Document is expried")
+//            print("Document is expried")
             data?.expireFlag = "Y"
         }else{
-            print("Document is not expire")
+//            print("Document is not expire")
             data?.expireFlag = "N"
         }
         
         
-        print("\n")
-        print("Data Group 1 Data : ")
-        print("Document Type : Passport" )
-        print("countyCode : \(data?.countryCode ?? "")")
-        print("Issue State : \(data?.issueState ?? "")")
-        print("Fullname : \(data?.holderFullName ?? "")")
-        print("Firstname : \(data?.holderFirstName ?? "")")
-        print("Middlename : \(data?.holderMiddleName ?? "")")
-        print("Lastname : \(data?.holderLastName ?? "")")
-        print("Document number : \(data?.documentNumber ?? "")")
-        print("Nationality : \(data?.nationality ?? "")")
-        print("Birth Date : \(data?.dateOfBirth ?? "")")
-        print("Expiry Date : \(data?.dateOfExpiry ?? "")")
-        print("Sex : \(data?.sex ?? "")")
-        print("Optional Data : \(data?.optionalData ?? "")")
-        print("\n")
+//        print("\n")
+//        print("Data Group 1 Data : ")
+//        print("Document Type : Passport" )
+//        print("countyCode : \(data?.countryCode ?? "")")
+//        print("Issue State : \(data?.issueState ?? "")")
+//        print("Fullname : \(data?.holderFullName ?? "")")
+//        print("Firstname : \(data?.holderFirstName ?? "")")
+//        print("Middlename : \(data?.holderMiddleName ?? "")")
+//        print("Lastname : \(data?.holderLastName ?? "")")
+//        print("Document number : \(data?.documentNumber ?? "")")
+//        print("Nationality : \(data?.nationality ?? "")")
+//        print("Birth Date : \(data?.dateOfBirth ?? "")")
+//        print("Expiry Date : \(data?.dateOfExpiry ?? "")")
+//        print("Sex : \(data?.sex ?? "")")
+//        print("Optional Data : \(data?.optionalData ?? "")")
+//        print("\n")
         
 
     }
@@ -879,23 +879,23 @@ public class PassportController
     // MARK: - DATA GROUP 2
     func readDG2() async {
         
-        print("""
-        
-        #####################################
-              BEGIN READ DATA GROUP 2 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              BEGIN READ DATA GROUP 2 
+//        #####################################
+//        
+//        """)
         
         defer{
             
-            print("""
-            
-            #####################################
-                   END READ DATA GROUP 2
-            #####################################
-            
-            """)
+//            print("""
+//            
+//            #####################################
+//                   END READ DATA GROUP 2
+//            #####################################
+//            
+//            """)
             
             
         }
@@ -930,8 +930,8 @@ public class PassportController
         
         
         let len = CalculateLenDG2(APDU:res, SKenc: SKenc)
-        print("LIB >>>> DG2 LEN : " + len[0])
-        print("LIB >>>> DG2 OFFSET : " + len[1])
+//        print("LIB >>>> DG2 LEN : " + len[0])
+//        print("LIB >>>> DG2 OFFSET : " + len[1])
         
         var reqLenHex:String = len[0]
         //var reqLenHex:String = "6700"
@@ -997,7 +997,7 @@ public class PassportController
         r = arr[0]
         rr = arr[1]
         let allLen = (UInt32(len[0],radix: 16)! * 2) - 100 //- 1000
-        print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
+//        print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
         
         guard r.count < allLen else {
             //let r2 = r.dropFirst(92)
@@ -1007,17 +1007,17 @@ public class PassportController
                 //let rr2 = rr.dropFirst(92)
                 let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "0000000C6A502020"))!))
                 if let image = UIImage(data: String(r2).hexadecimal!){
-                    print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                    print(r)
-                    print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                    print(r2)
+//                    print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+//                    print(r)
+//                    print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+//                    print(r2)
                     let djpg = image.jpegData(compressionQuality: 1.0)
                     data?.faceImage = djpg?.base64EncodedString()
                 }else if let image = UIImage(data: String(rr2).hexadecimal!){
-                    print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                    print(r)
-                    print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                    print(r2)
+//                    print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+//                    print(r)
+//                    print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+//                    print(r2)
                     let djpg = image.jpegData(compressionQuality: 1.0)
                     data?.faceImage = djpg?.base64EncodedString()
                 }else{
@@ -1030,17 +1030,17 @@ public class PassportController
                 let r2 = String(r.dropFirst((util?.FindIndexOf(inputString: r, target: "FFD8FFE000104A464946"))!))
                 let rr2 = String(rr.dropFirst((util?.FindIndexOf(inputString: rr, target: "FFD8FFE000104A464946"))!))
                 if let image = UIImage(data:String(r2).hexadecimal!){
-                    print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
-                    print(r)
-                    print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
-                    print(r2)
+//                    print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+//                    print(r)
+//                    print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+//                    print(r2)
                     let djpg = image.jpegData(compressionQuality: 1.0)
                     data?.faceImage = djpg?.base64EncodedString()
                 }else if let image = UIImage(data: String(rr2).hexadecimal!){
-                    print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
-                    print(r)
-                    print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
-                    print(r2)
+//                    print("LIB >>>> FACE DATA WITH TEMPLATE(JFIF FORMAT) : ")
+//                    print(r)
+//                    print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+//                    print(r2)
                     let djpg = image.jpegData(compressionQuality: 1.0)
                     data?.faceImage = djpg?.base64EncodedString()
                 }
@@ -1053,7 +1053,7 @@ public class PassportController
             return
         }
         
-        print("LIB >>>> DG2 FOUND REMAIN")
+//        print("LIB >>>> DG2 FOUND REMAIN")
         var re:String = ""
         var re2:String = ""
         
@@ -1110,10 +1110,10 @@ public class PassportController
         if util?.FindIndexOf(inputString: re, target: "0000000C6A502020") != -1 {
             re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "0000000C6A502020"))!))
             if let image = UIImage(data: re1.hexadecimal!) {
-                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
-                print(re)
-                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
-                print(re1)
+//                print("LIB >>>> FACE DATA WITH TEMPLATE (JP2000 FORMAT) : ")
+//                print(re)
+//                print("LIB >>>> FACE RAW (JP2000 FORMAT) : ")
+//                print(re1)
                 let djpg = image.jpegData(compressionQuality: 1.0)
                 data?.faceImage = djpg?.base64EncodedString()
             }else{
@@ -1123,10 +1123,10 @@ public class PassportController
             
             // JFIF Format
             re1 = String(re.dropFirst((util?.FindIndexOf(inputString: re, target: "FFD8FFE000104A464946"))!))
-            print("LIB >>>> FACE DATA WITH TEMPLATE (JFIF FORMAT) : ")
-            print(re)
-            print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
-            print(re1)
+//            print("LIB >>>> FACE DATA WITH TEMPLATE (JFIF FORMAT) : ")
+//            print(re)
+//            print("LIB >>>> FACE RAW (JFIF FORMAT) : ")
+//            print(re1)
             
             // Function below is used for Drop trailing "FFFF"
             //let re2 = String(re1.dropLast(128))
@@ -1154,7 +1154,7 @@ public class PassportController
         //print("result 1 : " + result)
         result = getDataFromDO87(in: result)
         let encResult = util?.TripleDesDecCBC(input: String(result), key: SKenc)
-        print("LIB >>>>  CALCULATE DG2 LEN ENC RESULT : " + encResult!)
+//        print("LIB >>>>  CALCULATE DG2 LEN ENC RESULT : " + encResult!)
         // Calculate length of header in biometric template
         let offsetIndex1 = util?.FindIndexOf(inputString: String(encResult!), target: "7F61")
         let offsetIndex2 = encResult!.count - offsetIndex1!
@@ -1190,8 +1190,8 @@ public class PassportController
         var fix = String(result.dropFirst(10))
         result1 = (util?.TripleDesDecCBC(input: String(result1), key: SKenc))!
         fix = (util?.TripleDesDecCBC(input: String(fix), key: SKenc))!
-        print("LIB >>>> GET DATA DG2 ENC : ")
-        print(result1)
+//        print("LIB >>>> GET DATA DG2 ENC : ")
+//        print(result1)
         //.dropFirst(92)
         return [result1,fix]
     }
@@ -1207,28 +1207,28 @@ public class PassportController
             var fix = String(result.dropFirst(10))
             nofix = String((util?.TripleDesDecCBC(input: String(nofix), key: SKenc).dropFirst(4))!)
             fix = String((util?.TripleDesDecCBC(input: String(fix), key: SKenc).dropFirst(4))!)
-            print("LIB >>>> DECRYPT BEFORE DROP : ")
-            print(nofix)
+//            print("LIB >>>> DECRYPT BEFORE DROP : ")
+//            print(nofix)
             //result = result.dropLast(10)
             //result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
             result1 = trimTrailing80(from: String(nofix))
             result2 = trimTrailing80(from: String(fix))
-            print("LIB >>>> DECRYPT RESULT : ")
-            print(result1)
+//            print("LIB >>>> DECRYPT RESULT : ")
+//            print(result1)
         }else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "990290008E"))!))
             var nofix = getDataFromDO87(in: result)
             var fix = String(result.dropFirst(10))
             nofix = String((util?.TripleDesDecCBC(input: String(nofix), key: SKenc).dropFirst(4))!)
             fix = String((util?.TripleDesDecCBC(input: String(fix), key: SKenc).dropFirst(4))!)
-            print("LIB >>>> DECRYPT BEFORE DROP : ")
-            print(nofix)
+//            print("LIB >>>> DECRYPT BEFORE DROP : ")
+//            print(nofix)
             //result = result.dropLast(2)
             //result1 = trimHexStringToLength(hexString: String(result), targetLength: 1796)
             result1 = trimTrailing80(from: nofix)
             result2 = trimTrailing80(from: fix)
-            print("LIB >>>> DECRYPT RESULT : ")
-            print(result1)
+//            print("LIB >>>> DECRYPT RESULT : ")
+//            print(result1)
         }
         return [result1,result2]
     }
@@ -1254,25 +1254,25 @@ public class PassportController
     // MARK: - Data Group 7
     func readDG7() async {
         
-        print("""
-        
-        #####################################
-              BEGIN READ DATA GROUP 7 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              BEGIN READ DATA GROUP 7 
+//        #####################################
+//        
+//        """)
         
         // MARK: - Step 1 : Consruct APDU for SELECT DG7
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG7.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
-        print("LIB >>>> (APDU CMD SELECT DG7) >>>> : " + apdu)
+//        print("LIB >>>> (APDU CMD SELECT DG7) >>>> : " + apdu)
         var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-        print("LIB <<<< (APDU RES SELECT DG7) <<<< : " + res.uppercased())
+//        print("LIB <<<< (APDU RES SELECT DG7) <<<< : " + res.uppercased())
         
         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
         if util?.FindIndexOf(inputString:res.uppercased(), target: "990290008E08") == -1 && util?.FindIndexOf(inputString: res, target: "990262828E08") == -1 {
             
-            print("LIB >>>> SELECT DG7 UNSUCCESS")
+//            print("LIB >>>> SELECT DG7 UNSUCCESS")
             
         }else{
             
@@ -1284,9 +1284,9 @@ public class PassportController
                 // MARK: - Step 3 : Send APDU Read Binary for get length DG data
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                 apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "FF", SSC: SSCP, SKmac: SKmac)
-                print("LIB >>>> (APDU CMD GET LEN DG7) >>>> : " + apdu)
+//                print("LIB >>>> (APDU CMD GET LEN DG7) >>>> : " + apdu)
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES GET LEN DG7) <<<< : " + res.uppercased())
+//                print("LIB <<<< (APDU RES GET LEN DG7) <<<< : " + res.uppercased())
                 
                 // MARK: - Step 4 : Verify Res Apdu get len DG11
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -1295,50 +1295,50 @@ public class PassportController
                     
                     // MARK: - Step 5 : Read DG11
                     let len = CalculateLenAndOffsetDG7(APDU:res, SKenc: SKenc)
-                    print("LIB >>>> DG7 CHARACTER LEN : " + len[0])
-                    print("LIB >>>> DG7 OFFSET LEN : " + len[1])
+//                    print("LIB >>>> DG7 CHARACTER LEN : " + len[0])
+//                    print("LIB >>>> DG7 OFFSET LEN : " + len[1])
                     
                     // MARK: - Step 5 : Get All Data DG3
                     SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                     apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: len[0], SSC: SSCP, SKmac: SKmac)
-                    print("LIB >>>> (APDU CMD READ DG7) >>>> : " + apdu)
+//                    print("LIB >>>> (APDU CMD READ DG7) >>>> : " + apdu)
                     res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                    print("LIB <<<< (APDU RES READ DG7) <<<< : " + res.uppercased())
+//                    print("LIB <<<< (APDU RES READ DG7) <<<< : " + res.uppercased())
                     
                     // MARK: - Step 6 : Verify Res Apdu Read DG3
                     SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
                     verify = VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac)
                     if verify {
                         let r = GetDataDG7(APDU: res, SKenc: SKenc)
-                        print("LIB >>>> DG 7 : " + r.dropLast(6))
+//                        print("LIB >>>> DG 7 : " + r.dropLast(6))
                         let res = r.dropLast(6)
                         let djpg = UIImage(data: String(res).hexadecimal!)!.jpegData(compressionQuality: 1.0)
                         data?.signatureImage = djpg!.base64EncodedString()
                         
                     }else{
-                        print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
+//                        print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
                         delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG7 FAIL",isError: true)
                     } // end of verify res apdu read dg3
                     
                     
                 }else{
-                    print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
+//                    print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
                     delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG7 FAIL",isError: true)
                 } // end of verify read dg7
             }else{
-                print("LIB >>>> COMPARE RES APDU SELECT DG7 FAIL")
+//                print("LIB >>>> COMPARE RES APDU SELECT DG7 FAIL")
                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG7 FAIL",isError: true)
             } // end of verify select dg7
             
         }
         
-        print("""
-        
-        #####################################
-              End READ DATA GROUP 7 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              End READ DATA GROUP 7 
+//        #####################################
+//        
+//        """)
         
     }
     
@@ -1356,7 +1356,7 @@ public class PassportController
         
         // MARK: - Step 2 Calculate Length of All Data
         let allLength = encResult.count
-        print("LIB >>>> DG7 CHARACTER LEN: " + String(allLength, radix: 10))
+//        print("LIB >>>> DG7 CHARACTER LEN: " + String(allLength, radix: 10))
         
 //        // MARK: - Step 3 Get Number of Biometric Record
 //        let IndexOfnumOfInstance = (util?.FindIndexOf(inputString: String(encResult), target: "0201"))! + 6
@@ -1404,26 +1404,26 @@ public class PassportController
     // MARK: - Data Group 11
     func readDG11() async {
         
-        print("""
-        
-        #####################################
-              BEGIN READ DATA GROUP 11 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              BEGIN READ DATA GROUP 11 
+//        #####################################
+//        
+//        """)
         
         // Step 1 : Consruct APDU for SELECT DG11
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG11.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
         //print("LIB >>>> (APDU CMD SELECT DG11) >>>> : " + apdu)
-        print("LIB >>>> (APDU CMD SELECT DG11) >>>> ")
+//        print("LIB >>>> (APDU CMD SELECT DG11) >>>> ")
         var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-        print("LIB <<<< (APDU RES SELECT DG11) <<<< : " + res.uppercased())
+//        print("LIB <<<< (APDU RES SELECT DG11) <<<< : " + res.uppercased())
         
         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
         if util?.FindIndexOf(inputString:res.uppercased(), target: "990290008E08") == -1 && util?.FindIndexOf(inputString: res, target: "990262828E08") == -1 {
             
-            print("LIB >>>> SELECT DG11 UNSUCCESS")
+//            print("LIB >>>> SELECT DG11 UNSUCCESS")
             
         }else{
             
@@ -1436,9 +1436,9 @@ public class PassportController
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                 apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "00", SSC: SSCP, SKmac: SKmac)
                 //print("LIB >>>> (APDU CMD GET LEN DG11) >>>> : " + apdu)
-                print("LIB >>>> (APDU CMD GET DG11) >>>> ")
+//                print("LIB >>>> (APDU CMD GET DG11) >>>> ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES GET DG11) <<<< : " + res.uppercased())
+//                print("LIB <<<< (APDU RES GET DG11) <<<< : " + res.uppercased())
                 
                 // Step 4 : Verify Res Apdu get len DG11
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -1456,13 +1456,13 @@ public class PassportController
                         data?.title = ""
                         data?.personelSummary = ""
                         
-                        print("LIB >>>> DG11 NOT FOUND")
+//                        print("LIB >>>> DG11 NOT FOUND")
                         
                     }else{
                         
                         // Step 5 : Read DG11
                         let dg11 = GetDataDG11(APDU:res, SKenc: SKenc)
-                        print("LIB >>>> DG11 : " + dg11)
+//                        print("LIB >>>> DG11 : " + dg11)
                         
                         // Step 6 : Loop for each data
                         data?.personalNumber = SplitDataWithTags(dg: dg11, Tag: "5F10")
@@ -1473,45 +1473,45 @@ public class PassportController
                         data?.profession = SplitDataWithTags(dg: dg11, Tag: "5F13")
                         data?.title = SplitDataWithTags(dg: dg11, Tag: "5F14").capitalized
                         data?.personelSummary = SplitDataWithTags(dg: dg11, Tag: "5F15")
-                        
-                        print("\n")
-                        print("Data Group 11 Data : ")
-                        print("Personal Number : \(data?.personalNumber ?? "")")
-                        print("Full Birth Date : \(data?.fullDateOfBirth ?? "")")
-                        print("Place of birth : \(data?.placeOfBirth ?? "")")
-                        print("Permanent Address : \(data?.permanentAddress ?? "")")
-                        print("Telephone : \(data?.telephone ?? "")")
-                        print("Title : \(data?.title ?? "")")
-                        print("\n")
+//                        
+//                        print("\n")
+//                        print("Data Group 11 Data : ")
+//                        print("Personal Number : \(data?.personalNumber ?? "")")
+//                        print("Full Birth Date : \(data?.fullDateOfBirth ?? "")")
+//                        print("Place of birth : \(data?.placeOfBirth ?? "")")
+//                        print("Permanent Address : \(data?.permanentAddress ?? "")")
+//                        print("Telephone : \(data?.telephone ?? "")")
+//                        print("Title : \(data?.title ?? "")")
+//                        print("\n")
                         
                         if data?.expireFlag == "Y" {
-                            print("Document is expried")
+//                            print("Document is expried")
                         }else{
-                            print("Document is not expire")
+//                            print("Document is not expire")
                         }
                         
                     } // DG11 NOT FOUND
         
                     
                 }else{
-                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
+//                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
                     delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG11 FAIL",isError: true)
                 } // end of verify read dg11
             }else{
-                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
+//                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG11 FAIL",isError: true)
             } // end of verify select dg11
             
         }
         
         
-        print("""
-        
-        #####################################
-              End READ DATA GROUP 11 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              End READ DATA GROUP 11 
+//        #####################################
+//        
+//        """)
         
     }
     
@@ -1540,23 +1540,23 @@ public class PassportController
     // MARK: - DATA GROUP 12
     func readDG12() async {
         
-        print("""
-        
-        #####################################
-              BEGIN READ DATA GROUP 12 
-        #####################################
-        
-        """)
+//        print("""
+//        
+//        #####################################
+//              BEGIN READ DATA GROUP 12 
+//        #####################################
+//        
+//        """)
         
         defer{
             
-            print("""
-            
-            #####################################
-                  End READ DATA GROUP 12
-            #####################################
-            
-            """)
+//            print("""
+//            
+//            #####################################
+//                  End READ DATA GROUP 12
+//            #####################################
+//            
+//            """)
             
         }
         
@@ -1564,14 +1564,14 @@ public class PassportController
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG12.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
         //print("LIB >>>> (APDU CMD SELECT DG11) >>>> : " + apdu)
-        print("LIB >>>> (APDU CMD SELECT DG12) >>>> ")
+//        print("LIB >>>> (APDU CMD SELECT DG12) >>>> ")
         var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-        print("LIB <<<< (APDU RES SELECT DG12) <<<< : " + res.uppercased())
+//        print("LIB <<<< (APDU RES SELECT DG12) <<<< : " + res.uppercased())
         
         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
         if util?.FindIndexOf(inputString:res.uppercased(), target: "990290008E08") == -1 && util?.FindIndexOf(inputString: res, target: "990262828E08") == -1 {
             
-            print("LIB >>>> SELECT DG12 UNSUCCESS")
+//            print("LIB >>>> SELECT DG12 UNSUCCESS")
             
         }else{
             
@@ -1584,9 +1584,9 @@ public class PassportController
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                 apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "00", SSC: SSCP, SKmac: SKmac)
                 //print("LIB >>>> (APDU CMD GET LEN DG11) >>>> : " + apdu)
-                print("LIB >>>> (APDU CMD GET DG12) >>>> ")
+//                print("LIB >>>> (APDU CMD GET DG12) >>>> ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-                print("LIB <<<< (APDU RES GET DG12) <<<< : " + res.uppercased())
+//                print("LIB <<<< (APDU RES GET DG12) <<<< : " + res.uppercased())
                 
                 // Step 4 : Verify Res Apdu get len DG11
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -1604,13 +1604,13 @@ public class PassportController
                         data?.title = ""
                         data?.personelSummary = ""
                         
-                        print("LIB >>>> DG12 NOT FOUND")
+//                        print("LIB >>>> DG12 NOT FOUND")
                         
                     }else{
                         
                         // Step 5 : Read DG12
                         let dg12 = GetDataDG12(APDU:res, SKenc: SKenc)
-                        print("LIB >>>> DG12 : " + dg12)
+//                        print("LIB >>>> DG12 : " + dg12)
                         
                         // Step 6 : Loop for each data
                         data?.issuingAuthority = SplitDataWithTags(dg: dg12, Tag: "5F19")
@@ -1621,25 +1621,25 @@ public class PassportController
                         data?.dateTimeDocPersonalization = SplitDataWithTags(dg: dg12, Tag: "5F55")
                         data?.serialNumberDocPersonalizationSystem = SplitDataWithTags(dg: dg12, Tag: "5F56")
                         
-                        print("\n")
-                        print("Data Group 12 Data : ")
-                        print("Issuing Authority : " + (data?.issuingAuthority)!)
-                        print("Date of Issue : " + (data?.dateOfIssue)!)
-                        print("Endorsements : " + (data?.endorsements)!)
-                        print("Image Of Rear : " + ((data?.imageOfFrontDoc)!))
-                        print("Date and time of document personalized : " + (data?.dateTimeDocPersonalization)!)
-                        print("Serial Number of Personalization System : " + (data?.serialNumberDocPersonalizationSystem)!)
-                        print("\n")
+//                        print("\n")
+//                        print("Data Group 12 Data : ")
+//                        print("Issuing Authority : " + (data?.issuingAuthority)!)
+//                        print("Date of Issue : " + (data?.dateOfIssue)!)
+//                        print("Endorsements : " + (data?.endorsements)!)
+//                        print("Image Of Rear : " + ((data?.imageOfFrontDoc)!))
+//                        print("Date and time of document personalized : " + (data?.dateTimeDocPersonalization)!)
+//                        print("Serial Number of Personalization System : " + (data?.serialNumberDocPersonalizationSystem)!)
+//                        print("\n")
                         
                     } // DG11 NOT FOUND
         
                     
                 }else{
-                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
+//                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
                     delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG11 FAIL",isError: true)
                 } // end of verify read dg11
             }else{
-                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
+//                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG11 FAIL",isError: true)
             } // end of verify select dg11
             
@@ -1665,11 +1665,11 @@ public class PassportController
         else{
             result = String(result.dropLast(result.count - (self.util?.FindIndexOf(inputString: String(result), target: "99029000"))!))
         }
-        print("Before get data from DO87")
-        print(result)
+//        print("Before get data from DO87")
+//        print(result)
         result = getDataFromDO87(in: result).uppercased()
-        print("After get data from DO87")
-        print(result)
+//        print("After get data from DO87")
+//        print(result)
         result = String((util?.TripleDesDecCBC(input: String(result), key: SKenc).dropFirst(0))!)
     
         return String(result)
