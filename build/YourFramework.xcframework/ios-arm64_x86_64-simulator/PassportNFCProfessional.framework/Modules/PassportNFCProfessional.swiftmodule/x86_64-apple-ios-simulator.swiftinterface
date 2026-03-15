@@ -1,0 +1,82 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1.2 effective-5.10 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-module-flags: -target x86_64-apple-ios16.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name PassportNFCProfessional
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1.2
+import CommonCrypto
+import CryptoKit
+import CryptoTokenKit
+import Foundation
+@_exported import PassportNFCProfessional
+import Swift
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+extension Foundation.Data {
+  public mutating func xor(key: Foundation.Data)
+}
+public protocol ReaderControllerDelegate {
+  func onErrorOccur(errorMessage: Swift.String, isError: Swift.Bool)
+}
+public class ReaderController {
+  public var delegate: (any PassportNFCProfessional.ReaderControllerDelegate)?
+  public init(isPassport: Swift.Bool)
+  public func initSmartCard() async -> Swift.Bool
+  public func getReader() -> Swift.String
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class Constant {
+  public static func getCountryFromCode(countryCode code: Swift.String) -> Swift.String
+  public static func getNatiolityFromCode(countryCode code: Swift.String) -> Swift.String
+  @objc deinit
+}
+public struct PassportModel {
+  public var documentCode: Swift.String?
+  public var issueState: Swift.String?
+  public var holderFullName: Swift.String?
+  public var holderFirstName: Swift.String?
+  public var holderMiddleName: Swift.String?
+  public var holderLastName: Swift.String?
+  public var documentNumber: Swift.String?
+  public var docNumCheckDigit: Swift.String?
+  public var nationality: Swift.String?
+  public var countryCode: Swift.String?
+  public var dateOfBirth: Swift.String?
+  public var dateOfBirthCheckDigit: Swift.String?
+  public var sex: Swift.String?
+  public var dateOfExpiry: Swift.String?
+  public var dateOfExpiryCheckDigit: Swift.String?
+  public var optionalData: Swift.String?
+  public var compositeCheckDigit: Swift.String?
+  public var faceImage: Swift.String?
+  public var signatureImage: Swift.String?
+  public var personalNumber: Swift.String?
+  public var fullDateOfBirth: Swift.String?
+  public var placeOfBirth: Swift.String?
+  public var permanentAddress: Swift.String?
+  public var telephone: Swift.String?
+  public var profession: Swift.String?
+  public var title: Swift.String?
+  public var personelSummary: Swift.String?
+  public var issuingAuthority: Swift.String?
+  public var dateOfIssue: Swift.String?
+  public var endorsements: Swift.String?
+  public var imageOfFrontDoc: Swift.String?
+  public var imageOfRearDoc: Swift.String?
+  public var dateTimeDocPersonalization: Swift.String?
+  public var serialNumberDocPersonalizationSystem: Swift.String?
+  public var expireFlag: Swift.String
+}
+public protocol PassportControllerDelegate {
+  func onProgressReadPassportData(progress: Swift.Float)
+  func onCompleteReadPassportData(data: PassportNFCProfessional.PassportModel)
+  func onBeginCardSession(isSuccess: Swift.Bool)
+  func onErrorOccur(errorMessage: Swift.String, isError: Swift.Bool)
+}
+public class PassportController {
+  public var delegate: (any PassportNFCProfessional.PassportControllerDelegate)?
+  public init(rmngr: PassportNFCProfessional.ReaderController, isSmartCardInitialized: Swift.Bool)
+  public func AutoReadRFIDData(documentNo: Swift.String, dob: Swift.String, doe: Swift.String)
+  public func ReadRFIDData(documentNo: Swift.String, dob: Swift.String, doe: Swift.String, dg1: Swift.Bool, dg2: Swift.Bool, dg11: Swift.Bool)
+  @objc deinit
+}
