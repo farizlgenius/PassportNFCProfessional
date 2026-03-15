@@ -68,6 +68,8 @@ public class ReaderController
             for reader in mngr!.slotNames {
                 if reader == "Feitian R502   " {
                     return "Feitian R502   "
+                }else if reader == "Circle CIR315 Dual" {
+                    return "Circle CIR315 Dual"
                 }
             }
             
