@@ -14,6 +14,7 @@
 		045498942D310C2700FE2522 /* PassportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498902D310C2700FE2522 /* PassportController.swift */; };
 		045498952D310C2700FE2522 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498912D310C2700FE2522 /* Utility.swift */; };
 		045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498972D31150500FE2522 /* CryptoTokenKit.framework */; };
+		04AFE8842F7621E80037E5BD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AFE8832F7621E50037E5BD /* Logger.swift */; };
 		04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498992D31152700FE2522 /* CryptoKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +28,7 @@
 		045498912D310C2700FE2522 /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		045498972D31150500FE2522 /* CryptoTokenKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoTokenKit.framework; path = System/Library/Frameworks/CryptoTokenKit.framework; sourceTree = SDKROOT; };
 		045498992D31152700FE2522 /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
+		04AFE8832F7621E50037E5BD /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 		045498862D310BE300FE2522 /* PassportNFCProfessional */ = {
 			isa = PBXGroup;
 			children = (
+				04AFE8832F7621E50037E5BD /* Logger.swift */,
 				045498902D310C2700FE2522 /* PassportController.swift */,
 				0454988E2D310C2600FE2522 /* PassportModel.swift */,
 				0454988F2D310C2700FE2522 /* ReaderController.swift */,
@@ -162,6 +165,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				045498952D310C2700FE2522 /* Utility.swift in Sources */,
+				04AFE8842F7621E80037E5BD /* Logger.swift in Sources */,
 				045498932D310C2700FE2522 /* ReaderController.swift in Sources */,
 				04375DD52D7ED803007A97BF /* Constant.swift in Sources */,
 				045498922D310C2700FE2522 /* PassportModel.swift in Sources */,

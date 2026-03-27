@@ -107,14 +107,17 @@ public class PassportController
     
     func sendAPDU(apdu:String,description:String) async -> String{
 //        print("LIB >>>> (APDU CMD \(description) >>>> : " + apdu)
+        Logger.shared.log("LIB >>>> (APDU CMD \(description) >>>> : " + apdu, level: .info)
         let res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
 //        print("LIB <<<< (APDU RES \(description) <<<< : " + res.uppercased())
+        Logger.shared.log("LIB <<<< (APDU RES \(description) <<<< : \(res.uppercased()) ",level: .info)
         return res
         
     }
     
     func handleError(description:String){
-        print("LIB >>>> \(description)")
+//        print("LIB >>>> \(description)")
+        Logger.shared.log("LIB >>>> \(description)",level: .error)
         delegate?.onErrorOccur(errorMessage: description,isError: true)
     }
     // MARK: - END OF HELPER HUNCTION
@@ -130,10 +133,19 @@ public class PassportController
 //        
 //        """)
         
+        Logger.shared.log("""
+        
+        #####################################
+          BEGIN EXTERNAL AUTHENTICATION STEP 
+        #####################################
+        
+        """, level: .info)
+        
         // Step 1 : Hash MRZ Data with SHA1 Algorithm
         let mrzData = mrz.data(using: .utf8)
         let Kseed = util?.sha1HashData(data: mrzData!).prefix(32)
 //        print("LIB >>>> Kseed : " + Kseed!)
+        Logger.shared.log("LIB >>>> Kseed : " + Kseed!, level: .info)
         
         // Step 2 / 3 : Calculate Kenc and Kmac from Kseed and adjust Parity
         let Key1 = util?.CalculateKey(Kseed: String(Kseed!))
@@ -142,6 +154,9 @@ public class PassportController
         
 //        print("LIB >>>> Kenc : " + Kenc!)
 //        print("LIB >>>> Kmac : " + Kmac!)
+        
+        Logger.shared.log("LIB >>>> Kenc : " + Kenc!,level: .info)
+        Logger.shared.log("LIB >>>> Kmac : " + Kmac!,level: .info)
         
         // Step 4 : Initial SmartCard
         
@@ -154,23 +169,23 @@ public class PassportController
         if isCardSessionBegin ?? false {
             
             // Step 5 : Transmit APDU for SELECT DF of Passport
-            //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
+            Logger.shared.log("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR,level: .info)
 //            print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
             var res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR2)
-//            print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
+            Logger.shared.log("LIB <<<< (APDU RES SELECT DF) <<<< : " + res,level: .info)
             
             
             if res == "nil" {
                 
-//                print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
+                Logger.shared.log("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)",level: .error)
                 delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError:true)
-//                print("""
-//                
-//                #####################################
-//                              THE END !!!
-//                #####################################
-//                
-//                """)
+                Logger.shared.log("""
+                
+                #####################################
+                              THE END !!!
+                #####################################
+                
+                """,level: .info)
                 rmngr.endCardSession()
                 return false
             }else{
@@ -178,27 +193,27 @@ public class PassportController
                 if res.suffix(2) == "6700" {
                     
                     // Step 5.1 : Transmit APDU for SELECT DF of Passport
-                    //print("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR)
+                    Logger.shared.log("LIB >>>> (APDU CMD SELECT DF) >>>> : " + SELECTDFSTR,level: .info)
 //                    print("LIB >>>> (APDU CMD SELECT DF) >>>> ")
                     res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: SELECTDFSTR)
-//                    print("LIB <<<< (APDU RES SELECT DF) <<<< : " + res)
+                    Logger.shared.log("LIB <<<< (APDU RES SELECT DF) <<<< : " + res,level: .info)
                     
                 }
                 
                 // Step 6 : Transmit Get Challenge APDU
-                //print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> : " + GETCHALLENGESTR)
+                Logger.shared.log("LIB >>>> (APDU CMD GET CHALLENGE) >>>> : " + GETCHALLENGESTR,level: .info)
 //                print("LIB >>>> (APDU CMD GET CHALLENGE) >>>> ")
                 res = await rmngr.transmitCardAPDU(card:rmngr.card!,apdu: GETCHALLENGESTR)
-//                print("LIB <<<< (APDU RES GET CHALLENGE) <<<< : " + res.uppercased())
+                Logger.shared.log("LIB <<<< (APDU RES GET CHALLENGE) <<<< : " + res.uppercased(),level: .info)
                 if res.count <= 4 {
-//                    print("LIB >>>> GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())")
-//                    print("""
-//                    
-//                    #####################################
-//                                  THE END !!!
-//                    #####################################
-//                    
-//                    """)
+                    Logger.shared.log("LIB >>>> GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())",level: .info)
+                    Logger.shared.log("""
+                    
+                    #####################################
+                                  THE END !!!
+                    #####################################
+                    
+                    """,level: .info)
                     delegate?.onErrorOccur(errorMessage: "GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())",isError: true)
                     rmngr.endCardSession()
                     return false
@@ -211,52 +226,52 @@ public class PassportController
                 
                 // Step 8 : Get S by concatenate RNDIFD + RNDIC + Kifd
                 let S = RNDIFD! + RNDIC + Kifd!
-//                print("LIB >>>> S : " + S)
+                Logger.shared.log("LIB >>>> S : " + S,level: .info)
                 
                 // Step 9 : Get Eifd by Encrypt S with Kenc by 3DES CBC Algorithm
                 let Eifd = util?.TripleDesEncCBC(input: S, key: Kenc!)
-//                print("LIB >>>> Eifd : " + Eifd!)
+                Logger.shared.log("LIB >>>> Eifd : " + Eifd!,level: .info)
                 
                 // Step 10 : Get Mifd by Calculate Message Authentication Code Padding Method 2 over Eifd by Kmac
                 let Mifd = util?.MessageAuthenticationCodeMethodTwo(input: Eifd!, key: Kmac!)
-//                print("LIB MSG >>>> Mifd : " + Mifd!)
+                Logger.shared.log("LIB MSG >>>> Mifd : " + Mifd!,level: .info)
                 
                 // Step 11 : Construct APDU Cmd for do External Authentication Cmd = Eifd concatinate with Mifd
                 let apdu = "0082000028" + Eifd! + Mifd! + "28"
                 
                 // Step 12 : Send APDU command
-                //print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : " + apdu)
+                Logger.shared.log("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : " + apdu,level: .info)
 //                print("LIB >>>> (APDU CMD EXTERNAL AUTH) >>>> : ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//                print("LIB <<<< (APDU RES EXTERNAL AUTH) <<<< : " + res.uppercased())
+                Logger.shared.log("LIB <<<< (APDU RES EXTERNAL AUTH) <<<< : " + res.uppercased(),level: .info)
                 
                 if res.count <= 4 {
-//                    print("LIB >>>> EXTERNAL AUTHENTICATION UNSUCCESS")
-//                    print("""
-//                    
-//                    #####################################
-//                                  THE END !!!
-//                    #####################################
-//                    
-//                    """)
+                    Logger.shared.log("LIB >>>> EXTERNAL AUTHENTICATION UNSUCCESS",level: .error)
+                    Logger.shared.log("""
+                    
+                    #####################################
+                                  THE END !!!
+                    #####################################
+                    
+                    """,level: .info)
                     delegate?.onErrorOccur(errorMessage: "EXTERNAL AUTHENTICATION UNSUCCESS",isError: true)
                     rmngr.endCardSession()
                     return false
                 }
                 // Step 13 : Get Eic by Cut Off Mic from response and decrypt Eic to get R
                 let Eic = res.uppercased().dropLast(20)
-//                print("LIB >>>> Eic : " + Eic)
+                Logger.shared.log("LIB >>>> Eic : " + Eic,level: .info)
                 let R = util?.TripleDesDecCBC(input: String(Eic), key: Kenc!)
-//                print("LIB >>>> R : " + R!)
+                Logger.shared.log("LIB >>>> R : " + R!,level: .info)
           
                 // Step 14 : Get Kic and SSC from R
                 let Kic = R!.dropFirst(32)
-//                print("LIB >>>> Kic : " + Kic)
+                Logger.shared.log("LIB >>>> Kic : " + Kic,level: .info)
                 let a = R?.dropLast(32)
                 let b = a!.dropLast(16)
                 let c = a!.dropFirst(16)
                 SSCP = String(b.dropFirst(8) + c.dropFirst(8))
-//                print("LIB >>>> SSC : " + SSCP)
+                Logger.shared.log("LIB >>>> SSC : " + SSCP,level: .info)
           
                 // Step 15 : Calculate KSseed by XOR Kic with Kifd
                 let SKseed = util?.XOR(Data1: String(Kic), Data2: Kifd!)
@@ -265,23 +280,23 @@ public class PassportController
                 let SKey = util?.CalculateKey(Kseed: SKseed!)
                 SKenc = SKey![0]!
                 SKmac = SKey![1]!
-//                print("LIB >>>> SKenc : " + SKenc)
-//                print("LIB >>>> SKmac : " + SKmac)
-//          
-//                print("""
-//                
-//                #####################################
-//                  END EXTERNAL AUTHENTICATION STEP
-//                #####################################
-//                
-//                """)
+                Logger.shared.log("LIB >>>> SKenc : " + SKenc,level: .info)
+                Logger.shared.log("LIB >>>> SKmac : " + SKmac,level: .info)
+//
+                Logger.shared.log("""
+                
+                #####################################
+                  END EXTERNAL AUTHENTICATION STEP
+                #####################################
+                
+                """,level: .info)
                 return true
                 
             } // Select DF
             
         }else{
             delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: false)
-//            print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
+            Logger.shared.log("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND",level: .error)
             rmngr.endCardSession()
             return false
         } // Init Card Session
@@ -473,7 +488,7 @@ public class PassportController
     func getDataFromDO87(in input:String) -> String {
         
         let result = CalculateDO87(input)
-//        print("LIB >>>> DO87 Data : \(result)")
+        Logger.shared.log("LIB >>>> DO87 Data : \(result)",level: .info)
         return result
         //return String(input.dropFirst(findIndexAfterPattern(in: input)))
     }
@@ -582,21 +597,21 @@ public class PassportController
     // MARK: - EF.COM
        func readCommon() async -> [String] {
            
-//           print("""
-//           
-//           #####################################
-//                   BEGIN READ EF.COM 
-//           #####################################
-//           
-//           """)
+           Logger.shared.log("""
+           
+           #####################################
+                   BEGIN READ EF.COM 
+           #####################################
+           
+           """,level: .info)
            
            // Step 1 : Construct APDU CMD for SELECT COM
            SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
            var apdu = ConstructAPDUforSelectDF(DG: FileID.Common.rawValue, SKenc: SKenc, SKmac: SKmac, SSCP: SSCP)
-//           print("LIB >>>> (APDU CMD SELECT EF.COM) >>>> : " + apdu)
+           Logger.shared.log("LIB >>>> (APDU CMD SELECT EF.COM) >>>> : " + apdu,level: .info)
 //           print("LIB >>>> (APDU CMD SELECT EF.COM) >>>> ")
            var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//           print("LIB <<<< (APDU RES SELECT EF.COM) <<<< : " + res.uppercased())
+           Logger.shared.log("LIB <<<< (APDU RES SELECT EF.COM) <<<< : " + res.uppercased(),level: .info)
            
            // Step 2 : Verify Res Apdu select common
            SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -606,10 +621,10 @@ public class PassportController
                // Step 3 : Send APDU Read Binary for get length com data
                SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "FF", SSC: SSCP, SKmac: SKmac)
-               //print("LIB >>>> (APDU CMD GET LEN DG1) >>>> : " + apdu)
+               Logger.shared.log("LIB >>>> (APDU CMD GET LEN DG1) >>>> : " + apdu,level: .info)
 //               print("LIB >>>> (APDU CMD GET LEN EF.COM) >>>> ")
                res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//               print("LIB <<<< (APDU RES GET LEN EF.COM) <<<< : " + res.uppercased())
+               Logger.shared.log("LIB <<<< (APDU RES GET LEN EF.COM) <<<< : " + res.uppercased(),level: .info)
                
                // Step 4 : Verify Res Apdu get com
                SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -620,16 +635,16 @@ public class PassportController
 //                   print("\n")
 //                   print("DG List : ")
                    com.forEach { i in
-                       print(DGTAG[i]!)
+                       Logger.shared.log(DGTAG[i]!,level: .info)
                    }
 //                   print("\n")
-//                   print("""
-//                   
-//                   #####################################
-//                           END READ EF.COM 
-//                   #####################################
-//                   
-//                   """)
+                   Logger.shared.log("""
+                   
+                   #####################################
+                           END READ EF.COM 
+                   #####################################
+                   
+                   """,level: .info)
                    
                    return com
                }else{
@@ -680,23 +695,23 @@ public class PassportController
     // MARK: - DATA GROUP 1
     func readDG1() async {
 
-//        print("""
-//        
-//        #####################################
-//              BEGIN READ DATA GROUP 1 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              BEGIN READ DATA GROUP 1 
+        #####################################
+        
+        """,level: .info)
         
         defer{
             
-//            print("""
-//            
-//            #####################################
-//                    END READ DATA GROUP 1
-//            #####################################
-//            
-//            """)
+            Logger.shared.log("""
+            
+            #####################################
+                    END READ DATA GROUP 1
+            #####################################
+            
+            """,level: .info)
             
         }
         
@@ -704,7 +719,7 @@ public class PassportController
         // Step 1 : Consruct APDU Cmd for SELECT DG1
         incrementSSCP();
         var apdu = self.ConstructAPDUforSelectDF(DG:FileID.DG1.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
-        //print("LIB >>>> (APDU CMD SELECT DG1) >>>> : " + apdu)
+        Logger.shared.log("LIB >>>> (APDU CMD SELECT DG1) >>>> : " + apdu,level: .info)
         var res = await sendAPDU(apdu: apdu, description: "SELECT DG1")
         
         
@@ -730,7 +745,7 @@ public class PassportController
         
         // Step 5 : Get Len of DG1 from Response
         let len = CalculateLenDG1(APDU:res, SKenc: SKenc)
-//        print("LIB >>>> DG1 LEN : " + len)
+        Logger.shared.log("LIB >>>> DG1 LEN : " + len,level: .info)
         
         
         // Step 6 : Construct APDU For Read DG1 Data
@@ -749,7 +764,7 @@ public class PassportController
         
         // Step 8 : Seperate Data
         let data1 = GetDataDG1(APDU: res, SKenc: SKenc)
-//        print("LIB >>>> DG1 : " + data1)
+        Logger.shared.log("LIB >>>> DG1 : " + data1,level: .info)
         data?.documentCode = String(data1.prefix(2))
         var data2 = data1.dropFirst(2)
         data?.issueState = Constant.getCountryFromCode(countryCode: String(data2.prefix(3)))
@@ -879,23 +894,23 @@ public class PassportController
     // MARK: - DATA GROUP 2
     func readDG2() async {
         
-//        print("""
-//        
-//        #####################################
-//              BEGIN READ DATA GROUP 2 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              BEGIN READ DATA GROUP 2 
+        #####################################
+        
+        """,level: .info)
         
         defer{
             
-//            print("""
-//            
-//            #####################################
-//                   END READ DATA GROUP 2
-//            #####################################
-//            
-//            """)
+            Logger.shared.log("""
+            
+            #####################################
+                   END READ DATA GROUP 2
+            #####################################
+            
+            """,level: .info)
             
             
         }
@@ -910,6 +925,7 @@ public class PassportController
         // Step 2 : Verify RES APDU Select DG2
         incrementSSCP()
         guard VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            Logger.shared.log("COMPARE RES APDU SELECT DG2 FAIL", level: .error)
             handleError(description: "COMPARE RES APDU SELECT DG2 FAIL")
             return
         }
@@ -924,14 +940,15 @@ public class PassportController
         // Step 4 : Verify Res APDU Get Len DG2
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            Logger.shared.log("COMPARE RES APDU GET LEN DG2 FAIL", level: .error)
             handleError(description: "COMPARE RES APDU GET LEN DG2 FAIL")
             return
         }
         
         
         let len = CalculateLenDG2(APDU:res, SKenc: SKenc)
-//        print("LIB >>>> DG2 LEN : " + len[0])
-//        print("LIB >>>> DG2 OFFSET : " + len[1])
+        Logger.shared.log("LIB >>>> DG2 LEN : " + len[0],level: .info)
+        Logger.shared.log("LIB >>>> DG2 OFFSET : " + len[1],level: .info)
         
         var reqLenHex:String = len[0]
         //var reqLenHex:String = "6700"
@@ -945,6 +962,7 @@ public class PassportController
         // Step 6 : Verify Res Apdu Read DG2
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+            Logger.shared.log("COMPARE RES APDU READ DG2 FAIL", level: .error)
             handleError(description: "COMPARE RES APDU READ DG2 FAIL")
             return
         }
@@ -965,6 +983,7 @@ public class PassportController
             
             incrementSSCP()
             guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
+                Logger.shared.log("COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL", level: .error)
                 handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL")
                 data?.faceImage = ""
                 return
@@ -982,6 +1001,7 @@ public class PassportController
                 incrementSSCP()
                 guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
                     handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 512 KENGTH FAIL")
+                    Logger.shared.log("COMPARE RES APDU READ DG2 FAIL WITH 512 KENGTH FAIL", level: .error)
                     data?.faceImage = ""
                     return
                 }
@@ -997,7 +1017,7 @@ public class PassportController
         r = arr[0]
         rr = arr[1]
         let allLen = (UInt32(len[0],radix: 16)! * 2) - 100 //- 1000
-//        print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
+        Logger.shared.log("LIB >>>> DG2 CHARACTER LEN : \(allLen)",level: .info)
         
         guard r.count < allLen else {
             //let r2 = r.dropFirst(92)
@@ -1053,14 +1073,14 @@ public class PassportController
             return
         }
         
-//        print("LIB >>>> DG2 FOUND REMAIN")
+        Logger.shared.log("LIB >>>> DG2 FOUND REMAIN",level: .info)
         var re:String = ""
         var re2:String = ""
         
         // Step 7 : Get Remain Data DG2
         incrementSSCP()
         //apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: "0384", SSC: SSCP, SKmac: SKmac)
-        //print("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu)
+        Logger.shared.log("LIB >>>> (APDU CMD READ DG2) >>>> : " + apdu,level: .info)
         apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset:"00", HexLength: reqLenHex, SSC: SSCP, SKmac: SKmac)
         res = await sendAPDU(apdu: apdu, description: "READ REAMIN DG2")
 
@@ -1254,25 +1274,25 @@ public class PassportController
     // MARK: - Data Group 7
     func readDG7() async {
         
-//        print("""
-//        
-//        #####################################
-//              BEGIN READ DATA GROUP 7 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              BEGIN READ DATA GROUP 7 
+        #####################################
+        
+        """,level: .info)
         
         // MARK: - Step 1 : Consruct APDU for SELECT DG7
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG7.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
-//        print("LIB >>>> (APDU CMD SELECT DG7) >>>> : " + apdu)
+        Logger.shared.log("LIB >>>> (APDU CMD SELECT DG7) >>>> : " + apdu,level: .info)
         var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//        print("LIB <<<< (APDU RES SELECT DG7) <<<< : " + res.uppercased())
+        Logger.shared.log("LIB <<<< (APDU RES SELECT DG7) <<<< : " + res.uppercased(),level: .info)
         
         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
         if util?.FindIndexOf(inputString:res.uppercased(), target: "990290008E08") == -1 && util?.FindIndexOf(inputString: res, target: "990262828E08") == -1 {
             
-//            print("LIB >>>> SELECT DG7 UNSUCCESS")
+            Logger.shared.log("LIB >>>> SELECT DG7 UNSUCCESS",level: .error)
             
         }else{
             
@@ -1284,9 +1304,9 @@ public class PassportController
                 // MARK: - Step 3 : Send APDU Read Binary for get length DG data
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                 apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "FF", SSC: SSCP, SKmac: SKmac)
-//                print("LIB >>>> (APDU CMD GET LEN DG7) >>>> : " + apdu)
+                Logger.shared.log("LIB >>>> (APDU CMD GET LEN DG7) >>>> : " + apdu,level: .info)
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//                print("LIB <<<< (APDU RES GET LEN DG7) <<<< : " + res.uppercased())
+                Logger.shared.log("LIB <<<< (APDU RES GET LEN DG7) <<<< : " + res.uppercased(),level: .info)
                 
                 // MARK: - Step 4 : Verify Res Apdu get len DG11
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -1295,15 +1315,15 @@ public class PassportController
                     
                     // MARK: - Step 5 : Read DG11
                     let len = CalculateLenAndOffsetDG7(APDU:res, SKenc: SKenc)
-//                    print("LIB >>>> DG7 CHARACTER LEN : " + len[0])
-//                    print("LIB >>>> DG7 OFFSET LEN : " + len[1])
+                    Logger.shared.log("LIB >>>> DG7 CHARACTER LEN : " + len[0],level: .info)
+                    Logger.shared.log("LIB >>>> DG7 OFFSET LEN : " + len[1],level: .info)
                     
                     // MARK: - Step 5 : Get All Data DG3
                     SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                     apdu = ConstructAPDUforReadBinaryExtend(HexBlock: "00", HexOffset: len[1], HexLength: len[0], SSC: SSCP, SKmac: SKmac)
-//                    print("LIB >>>> (APDU CMD READ DG7) >>>> : " + apdu)
+                    Logger.shared.log("LIB >>>> (APDU CMD READ DG7) >>>> : " + apdu,level: .info)
                     res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//                    print("LIB <<<< (APDU RES READ DG7) <<<< : " + res.uppercased())
+                    Logger.shared.log("LIB <<<< (APDU RES READ DG7) <<<< : " + res.uppercased(),level: .info)
                     
                     // MARK: - Step 6 : Verify Res Apdu Read DG3
                     SSCP = (util?.IncrementHex(Hex:SSCP, Increment: 1))!
@@ -1316,29 +1336,29 @@ public class PassportController
                         data?.signatureImage = djpg!.base64EncodedString()
                         
                     }else{
-//                        print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
+                        Logger.shared.log("LIB >>>> COMPARE RES APDU READ DG7 FAIL",level: .error)
                         delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG7 FAIL",isError: true)
                     } // end of verify res apdu read dg3
                     
                     
                 }else{
-//                    print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
+                    Logger.shared.log("LIB >>>> COMPARE RES APDU READ DG7 FAIL",level: .error)
                     delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG7 FAIL",isError: true)
                 } // end of verify read dg7
             }else{
-//                print("LIB >>>> COMPARE RES APDU SELECT DG7 FAIL")
+                Logger.shared.log("LIB >>>> COMPARE RES APDU SELECT DG7 FAIL",level: .error)
                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG7 FAIL",isError: true)
             } // end of verify select dg7
             
         }
         
-//        print("""
-//        
-//        #####################################
-//              End READ DATA GROUP 7 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              End READ DATA GROUP 7 
+        #####################################
+        
+        """,level: .info)
         
     }
     
@@ -1404,26 +1424,26 @@ public class PassportController
     // MARK: - Data Group 11
     func readDG11() async {
         
-//        print("""
-//        
-//        #####################################
-//              BEGIN READ DATA GROUP 11 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              BEGIN READ DATA GROUP 11 
+        #####################################
+        
+        """,level: .info)
         
         // Step 1 : Consruct APDU for SELECT DG11
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG11.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
-        //print("LIB >>>> (APDU CMD SELECT DG11) >>>> : " + apdu)
+        Logger.shared.log("LIB >>>> (APDU CMD SELECT DG11) >>>> : " + apdu,level: .info)
 //        print("LIB >>>> (APDU CMD SELECT DG11) >>>> ")
         var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//        print("LIB <<<< (APDU RES SELECT DG11) <<<< : " + res.uppercased())
+        Logger.shared.log("LIB <<<< (APDU RES SELECT DG11) <<<< : " + res.uppercased(),level: .info)
         
         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
         if util?.FindIndexOf(inputString:res.uppercased(), target: "990290008E08") == -1 && util?.FindIndexOf(inputString: res, target: "990262828E08") == -1 {
             
-//            print("LIB >>>> SELECT DG11 UNSUCCESS")
+            Logger.shared.log("LIB >>>> SELECT DG11 UNSUCCESS",level: .error)
             
         }else{
             
@@ -1435,10 +1455,10 @@ public class PassportController
                 // Step 3 : Send APDU Read Binary for get length DG data
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                 apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "00", SSC: SSCP, SKmac: SKmac)
-                //print("LIB >>>> (APDU CMD GET LEN DG11) >>>> : " + apdu)
+                Logger.shared.log("LIB >>>> (APDU CMD GET LEN DG11) >>>> : " + apdu,level: .info)
 //                print("LIB >>>> (APDU CMD GET DG11) >>>> ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//                print("LIB <<<< (APDU RES GET DG11) <<<< : " + res.uppercased())
+                Logger.shared.log("LIB <<<< (APDU RES GET DG11) <<<< : " + res.uppercased(),level: .info)
                 
                 // Step 4 : Verify Res Apdu get len DG11
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -1456,7 +1476,7 @@ public class PassportController
                         data?.title = ""
                         data?.personelSummary = ""
                         
-//                        print("LIB >>>> DG11 NOT FOUND")
+                        Logger.shared.log("LIB >>>> DG11 NOT FOUND",level: .error)
                         
                     }else{
                         
@@ -1494,24 +1514,24 @@ public class PassportController
         
                     
                 }else{
-//                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
+                    Logger.shared.log("LIB >>>> COMPARE RES APDU READ DG11 FAIL",level: .error)
                     delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG11 FAIL",isError: true)
                 } // end of verify read dg11
             }else{
-//                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
+                Logger.shared.log("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL",level: .error)
                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG11 FAIL",isError: true)
             } // end of verify select dg11
             
         }
         
         
-//        print("""
-//        
-//        #####################################
-//              End READ DATA GROUP 11 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              End READ DATA GROUP 11 
+        #####################################
+        
+        """,level: .info)
         
     }
     
@@ -1540,38 +1560,38 @@ public class PassportController
     // MARK: - DATA GROUP 12
     func readDG12() async {
         
-//        print("""
-//        
-//        #####################################
-//              BEGIN READ DATA GROUP 12 
-//        #####################################
-//        
-//        """)
+        Logger.shared.log("""
+        
+        #####################################
+              BEGIN READ DATA GROUP 12 
+        #####################################
+        
+        """,level: .info)
         
         defer{
             
-//            print("""
-//            
-//            #####################################
-//                  End READ DATA GROUP 12
-//            #####################################
-//            
-//            """)
+            Logger.shared.log("""
+            
+            #####################################
+                  End READ DATA GROUP 12
+            #####################################
+            
+            """,level: .info)
             
         }
         
-        // Step 1 : Consruct APDU for SELECT DG11
+        // Step 1 : Consruct APDU for SELECT DG12
         SSCP = (util?.IncrementHex(Hex: String(SSCP), Increment: 1))!
         var apdu = ConstructAPDUforSelectDF(DG:FileID.DG12.rawValue,SKenc: SKenc,SKmac: SKmac,SSCP: SSCP)
-        //print("LIB >>>> (APDU CMD SELECT DG11) >>>> : " + apdu)
+        Logger.shared.log("LIB >>>> (APDU CMD SELECT DG12) >>>> : " + apdu,level: .info)
 //        print("LIB >>>> (APDU CMD SELECT DG12) >>>> ")
         var res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//        print("LIB <<<< (APDU RES SELECT DG12) <<<< : " + res.uppercased())
+        Logger.shared.log("LIB <<<< (APDU RES SELECT DG12) <<<< : " + res.uppercased(),level: .info)
         
         SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
         if util?.FindIndexOf(inputString:res.uppercased(), target: "990290008E08") == -1 && util?.FindIndexOf(inputString: res, target: "990262828E08") == -1 {
             
-//            print("LIB >>>> SELECT DG12 UNSUCCESS")
+            Logger.shared.log("LIB >>>> SELECT DG12 UNSUCCESS",level: .error)
             
         }else{
             
@@ -1583,10 +1603,10 @@ public class PassportController
                 // Step 3 : Send APDU Read Binary for get length DG data
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
                 apdu = ConstructAPDUforReadBinary(HexBlock: "00", HexOffset: "00", HexLength: "00", SSC: SSCP, SKmac: SKmac)
-                //print("LIB >>>> (APDU CMD GET LEN DG11) >>>> : " + apdu)
+                Logger.shared.log("LIB >>>> (APDU CMD GET LEN DG12) >>>> : " + apdu,level: .info)
 //                print("LIB >>>> (APDU CMD GET DG12) >>>> ")
                 res = await rmngr.transmitCardAPDU(card: rmngr.card!, apdu: apdu)
-//                print("LIB <<<< (APDU RES GET DG12) <<<< : " + res.uppercased())
+                Logger.shared.log("LIB <<<< (APDU RES GET DG12) <<<< : " + res.uppercased(),level: .info)
                 
                 // Step 4 : Verify Res Apdu get len DG11
                 SSCP = (util?.IncrementHex(Hex: SSCP, Increment: 1))!
@@ -1635,11 +1655,11 @@ public class PassportController
         
                     
                 }else{
-//                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
+                    Logger.shared.log("LIB >>>> COMPARE RES APDU READ DG11 FAIL",level: .error)
                     delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG11 FAIL",isError: true)
                 } // end of verify read dg11
             }else{
-//                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
+                Logger.shared.log("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL",level: .error)
                 delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG11 FAIL",isError: true)
             } // end of verify select dg11
             
@@ -1776,122 +1796,122 @@ public class PassportController
                 eachProgress = 1.0 / eachProgress
                 
                 if DGTAG.contains("6C") {
-                    print("LIB >>>> CHIP SUPPORT DG12")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG12",level: .info)
                     await readDG12()
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG12")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG12")
                 }
                 
                 if DGTAG.contains("61") {
-                    print("LIB >>>> CHIP SUPPORT DG1")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG1")
                     await readDG1()
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG1")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG1")
                 }
                 
                 if DGTAG.contains("75") {
-                    print("LIB >>>> CHIP SUPPORT DG2")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG2")
                     await readDG2()
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG2")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG2")
                 }
                 
                 
                 if DGTAG.contains("63") {
-                    print("LIB >>>> CHIP SUPPORT DG3")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG3")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG3")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG3")
                 }
                 
                 if DGTAG.contains("76") {
-                    print("LIB >>>> CHIP SUPPORT DG4")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG4")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG4")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG4")
                 }
                 
                 if DGTAG.contains("65") {
-                    print("LIB >>>> CHIP SUPPORT DG5")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG5")
                 }else{
                     print("LIB >>>> CHIP NOT SUPPORT DG5")
                 }
                 
                 if DGTAG.contains("66") {
-                    print("LIB >>>> CHIP SUPPORT DG6")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG6")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG6")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG6")
                 }
                 
                 if DGTAG.contains("67") {
-                    print("LIB >>>> CHIP SUPPORT DG7")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG7")
                     await readDG7()
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG7")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG7")
                 }
                 
                 if DGTAG.contains("68") {
-                    print("LIB >>>> CHIP SUPPORT DG8")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG8")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG8")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG8")
                 }
                 
                 if DGTAG.contains("69") {
-                    print("LIB >>>> CHIP SUPPORT DG9")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG9")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG9")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG9")
                 }
                 
                 if DGTAG.contains("6A") {
-                    print("LIB >>>> CHIP SUPPORT DG10")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG10")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG10")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG10")
                 }
                 
                 if DGTAG.contains("6B") {
-                    print("LIB >>>> CHIP SUPPORT DG11")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG11")
                     await readDG11()
                     progress += eachProgress
                     delegate?.onProgressReadPassportData(progress: progress)
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG11")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG11")
                 }
                 
                 
                 if DGTAG.contains("6D") {
-                    print("LIB >>>> CHIP SUPPORT DG13")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG13")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG13")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG13")
                 }
                 
                 if DGTAG.contains("6E") {
-                    print("LIB >>>> CHIP SUPPORT DG14")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG14")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG14")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG14")
                 }
                 
                 if DGTAG.contains("6F") {
-                    print("LIB >>>> CHIP SUPPORT DG15")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG15")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG15")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG15")
                 }
                 
                 if DGTAG.contains("70") {
-                    print("LIB >>>> CHIP SUPPORT DG16")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT DG16")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG16")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT DG16")
                 }
                 
                 if DGTAG.contains("77") {
-                    print("LIB >>>> CHIP SUPPORT SOD")
+                    Logger.shared.log("LIB >>>> CHIP SUPPORT SOD")
                 }else{
-                    print("LIB >>>> CHIP NOT SUPPORT SOD")
+                    Logger.shared.log("LIB >>>> CHIP NOT SUPPORT SOD")
                 }
                 
                 

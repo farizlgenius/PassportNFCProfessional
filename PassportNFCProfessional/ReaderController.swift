@@ -30,10 +30,10 @@ public class ReaderController
         let readerName = getReader()
         slot = await mngr?.getSlot(withName: readerName)
         if slot != nil {
-//            print("LIB >>>> INIT SMART CARD SUCCESS")
+            Logger.shared.log("LIB >>>> INIT SMART CARD SUCCESS",level: .info)
             return true
         }
-//        print("INIT SMART CARD UNSUCCESS")
+        Logger.shared.log("INIT SMART CARD UNSUCCESS",level: .error)
         delegate?.onErrorOccur(errorMessage: "INIT SMART CARD UNSUCCESS", isError: true)
         return false
     }
@@ -73,12 +73,12 @@ public class ReaderController
                 }
             }
             
-//            print("LIB >>>> NO READER ATTACHED")
+            Logger.shared.log("LIB >>>> NO READER ATTACHED",level: .error)
             delegate?.onErrorOccur(errorMessage: "NO READER ATTACHED", isError: true)
             return "No Reader"
             
         }else{
-//            print("LIB >>>> NO READER ATTACHED")
+            Logger.shared.log("LIB >>>> NO READER ATTACHED",level: .error)
             delegate?.onErrorOccur(errorMessage: "NO READER ATTACHED", isError: true)
             return "No Reader"
         }
@@ -90,15 +90,15 @@ public class ReaderController
         card = slot!.makeSmartCard()
         if let card = card {
             do {
-//                print("LIB >>>> BEGIN CARD SESSION SUCCESS")
+                Logger.shared.log("LIB >>>> BEGIN CARD SESSION SUCCESS")
                 return try await card.beginSession()
             } catch {
-//                print("LIB >>>> BEGIN CARD SESSION FAIL && NO CARD FOUND")
+                Logger.shared.log("LIB >>>> BEGIN CARD SESSION FAIL && NO CARD FOUND",level: .error)
                 //delegate?.onErrorOccur(errorMessage: "Begin Card Session Fail, No Smart Card Found", isError: true)
                 return false
             }
         }else{
-//            print("LIB >>>> MAKE SMART CARD SLOT FAIL")
+            Logger.shared.log("LIB >>>> MAKE SMART CARD SLOT FAIL",level: .error)
             //delegate?.onErrorOccur(errorMessage: "Make Smart Card Slot Fail !!!", isError: true)
             return false
         }
@@ -123,9 +123,9 @@ public class ReaderController
             card = nil
             slot = nil
             //mngr = nil
-//            print("LIB >>>> END CARD SESSION SUCCESS")
+            Logger.shared.log("LIB >>>> END CARD SESSION SUCCESS")
         }else{
-//            print("LIB >>> END CARD SESSION FAIL")
+            Logger.shared.log("LIB >>> END CARD SESSION FAIL",level: .error)
         }
         
     }
