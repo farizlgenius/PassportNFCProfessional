@@ -764,7 +764,7 @@ public class PassportController
         
         // Step 8 : Seperate Data
         let data1 = GetDataDG1(APDU: res, SKenc: SKenc)
-        Logger.shared.log("LIB >>>> DG1 : " + data1,level: .info)
+//        Logger.shared.log("LIB >>>> DG1 : " + data1,level: .info)
         data?.documentCode = String(data1.prefix(2))
         var data2 = data1.dropFirst(2)
         data?.issueState = Constant.getCountryFromCode(countryCode: String(data2.prefix(3)))

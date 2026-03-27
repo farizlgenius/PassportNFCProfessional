@@ -7,6 +7,7 @@
 
 import Foundation
 import os
+import UIKit
 
 public final class Logger {
 
@@ -119,5 +120,64 @@ public final class Logger {
 
     public func getLogFolderPath() -> String {
         return logDirectory.path
+    }
+    
+    public func exportLogFile() -> URL? {
+        let fileManager = FileManager.default
+
+        // Ensure current log exists
+        guard fileManager.fileExists(atPath: logFile.path) else {
+            return nil
+        }
+
+        // Create readable timestamp
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        let dateString = formatter.string(from: Date())
+
+        // Optional: add device + app version
+        let device = UIDevice.current.model
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "v1"
+
+        let fileName = "logs_\(device)_\(version)_\(dateString).log"
+
+        // Save to temp folder (IMPORTANT)
+        let tempURL = fileManager.temporaryDirectory.appendingPathComponent(fileName)
+
+        // Remove old temp file if exists
+        try? fileManager.removeItem(at: tempURL)
+
+        // Copy current log → renamed file
+        do {
+            try fileManager.copyItem(at: logFile, to: tempURL)
+            return tempURL
+        } catch {
+            osLogger.error("Export failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    public func exportAllLogs() -> URL? {
+        let files = getLogs()
+        guard !files.isEmpty else { return nil }
+
+        var content = ""
+
+        for file in files {
+            if let text = try? String(contentsOf: file) {
+                content += text + "\n"
+            }
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+
+        let fileName = "all_logs_\(formatter.string(from: Date())).log"
+
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+
+        try? content.write(to: tempURL, atomically: true, encoding: .utf8)
+
+        return tempURL
     }
 }
