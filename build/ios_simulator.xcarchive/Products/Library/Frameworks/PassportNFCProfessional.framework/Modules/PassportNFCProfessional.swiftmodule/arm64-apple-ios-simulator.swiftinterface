@@ -1,7 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.1.2 effective-5.10 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-compiler-version: Apple Swift version 6.2.4 effective-5.10 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
 // swift-module-flags: -target arm64-apple-ios16.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name PassportNFCProfessional
-// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1.2
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
 import CommonCrypto
 import CryptoKit
 import CryptoTokenKit
@@ -12,8 +12,37 @@ import UIKit
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
+import os
 extension Foundation.Data {
   public mutating func xor(key: Foundation.Data)
+}
+@_hasMissingDesignatedInitializers final public class Logger {
+  public static let shared: PassportNFCProfessional.Logger
+  public enum LogLevel : Swift.String {
+    case debug
+    case info
+    case error
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.String)
+    #endif
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  final public var isDebugEnabled: Swift.Bool
+  final public var maxFileSize: Swift.UInt64
+  final public var maxNumberOfFiles: Swift.Int
+  final public func log(_ message: Swift.String, level: PassportNFCProfessional.Logger.LogLevel = .info)
+  final public func getLogs() -> [Foundation.URL]
+  final public func getLogFolderPath() -> Swift.String
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func exportLogFile() -> Foundation.URL?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func exportAllLogs() -> Foundation.URL?
+  #endif
+  @objc deinit
 }
 public protocol ReaderControllerDelegate {
   func onErrorOccur(errorMessage: Swift.String, isError: Swift.Bool)
@@ -80,3 +109,6 @@ public class PassportController {
   public func ReadRFIDData(documentNo: Swift.String, dob: Swift.String, doe: Swift.String, dg1: Swift.Bool, dg2: Swift.Bool, dg11: Swift.Bool)
   @objc deinit
 }
+extension PassportNFCProfessional.Logger.LogLevel : Swift.Equatable {}
+extension PassportNFCProfessional.Logger.LogLevel : Swift.Hashable {}
+extension PassportNFCProfessional.Logger.LogLevel : Swift.RawRepresentable {}

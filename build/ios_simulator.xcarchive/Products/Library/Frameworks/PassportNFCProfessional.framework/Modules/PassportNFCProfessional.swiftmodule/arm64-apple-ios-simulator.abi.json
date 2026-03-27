@@ -40,6 +40,801 @@
       },
       {
         "kind": "Import",
+        "name": "os",
+        "printedName": "os",
+        "declKind": "Import",
+        "moduleName": "PassportNFCProfessional"
+      },
+      {
+        "kind": "Import",
+        "name": "UIKit",
+        "printedName": "UIKit",
+        "declKind": "Import",
+        "moduleName": "PassportNFCProfessional"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "Logger",
+        "printedName": "Logger",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "shared",
+            "printedName": "shared",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Logger",
+                "printedName": "PassportNFCProfessional.Logger",
+                "usr": "s:23PassportNFCProfessional6LoggerC"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:23PassportNFCProfessional6LoggerC6sharedACvpZ",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC6sharedACvpZ",
+            "moduleName": "PassportNFCProfessional",
+            "static": true,
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Logger",
+                    "printedName": "PassportNFCProfessional.Logger",
+                    "usr": "s:23PassportNFCProfessional6LoggerC"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC6sharedACvgZ",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC6sharedACvgZ",
+                "moduleName": "PassportNFCProfessional",
+                "static": true,
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "TypeDecl",
+            "name": "LogLevel",
+            "printedName": "LogLevel",
+            "children": [
+              {
+                "kind": "Var",
+                "name": "debug",
+                "printedName": "debug",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(PassportNFCProfessional.Logger.LogLevel.Type) -> PassportNFCProfessional.Logger.LogLevel",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LogLevel",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                        "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel.Type",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "LogLevel",
+                            "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                            "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "declKind": "EnumElement",
+                "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO5debugyA2EmF",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO5debugyA2EmF",
+                "moduleName": "PassportNFCProfessional"
+              },
+              {
+                "kind": "Var",
+                "name": "info",
+                "printedName": "info",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(PassportNFCProfessional.Logger.LogLevel.Type) -> PassportNFCProfessional.Logger.LogLevel",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LogLevel",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                        "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel.Type",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "LogLevel",
+                            "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                            "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "declKind": "EnumElement",
+                "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO4infoyA2EmF",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO4infoyA2EmF",
+                "moduleName": "PassportNFCProfessional"
+              },
+              {
+                "kind": "Var",
+                "name": "error",
+                "printedName": "error",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(PassportNFCProfessional.Logger.LogLevel.Type) -> PassportNFCProfessional.Logger.LogLevel",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LogLevel",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                        "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel.Type",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "LogLevel",
+                            "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                            "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "declKind": "EnumElement",
+                "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO5erroryA2EmF",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO5erroryA2EmF",
+                "moduleName": "PassportNFCProfessional"
+              },
+              {
+                "kind": "Constructor",
+                "name": "init",
+                "printedName": "init(rawValue:)",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "PassportNFCProfessional.Logger.LogLevel?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LogLevel",
+                        "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                        "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Constructor",
+                "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO8rawValueAESgSS_tcfc",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO8rawValueAESgSS_tcfc",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "init_kind": "Designated"
+              },
+              {
+                "kind": "Var",
+                "name": "rawValue",
+                "printedName": "rawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Var",
+                "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO8rawValueSSvp",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO8rawValueSSvp",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "accessors": [
+                  {
+                    "kind": "Accessor",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "declKind": "Accessor",
+                    "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO8rawValueSSvg",
+                    "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO8rawValueSSvg",
+                    "moduleName": "PassportNFCProfessional",
+                    "implicit": true,
+                    "accessorKind": "get"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Enum",
+            "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC8LogLevelO",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "enumRawTypeName": "String",
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP",
+                "mangledName": "$ss8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP",
+                "mangledName": "$ss9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ",
+                "mangledName": "$sSQ"
+              },
+              {
+                "kind": "Conformance",
+                "name": "Hashable",
+                "printedName": "Hashable",
+                "usr": "s:SH",
+                "mangledName": "$sSH"
+              },
+              {
+                "kind": "Conformance",
+                "name": "RawRepresentable",
+                "printedName": "RawRepresentable",
+                "children": [
+                  {
+                    "kind": "TypeWitness",
+                    "name": "RawValue",
+                    "printedName": "RawValue",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ]
+                  }
+                ],
+                "usr": "s:SY",
+                "mangledName": "$sSY"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "isDebugEnabled",
+            "printedName": "isDebugEnabled",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:23PassportNFCProfessional6LoggerC14isDebugEnabledSbvp",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC14isDebugEnabledSbvp",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC14isDebugEnabledSbvg",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC14isDebugEnabledSbvg",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC14isDebugEnabledSbvs",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC14isDebugEnabledSbvs",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC14isDebugEnabledSbvM",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC14isDebugEnabledSbvM",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "maxFileSize",
+            "printedName": "maxFileSize",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64Vvp",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64Vvp",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64Vvg",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64Vvg",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64Vvs",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64Vvs",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64VvM",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC11maxFileSizes6UInt64VvM",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "maxNumberOfFiles",
+            "printedName": "maxNumberOfFiles",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivp",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivp",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivg",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivg",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivs",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivs",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivM",
+                "mangledName": "$s23PassportNFCProfessional6LoggerC16maxNumberOfFilesSivM",
+                "moduleName": "PassportNFCProfessional",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "log",
+            "printedName": "log(_:level:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LogLevel",
+                "printedName": "PassportNFCProfessional.Logger.LogLevel",
+                "hasDefaultArg": true,
+                "usr": "s:23PassportNFCProfessional6LoggerC8LogLevelO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:23PassportNFCProfessional6LoggerC3log_5levelySS_AC8LogLevelOtF",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC3log_5levelySS_AC8LogLevelOtF",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getLogs",
+            "printedName": "getLogs()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Foundation.URL]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:23PassportNFCProfessional6LoggerC7getLogsSay10Foundation3URLVGyF",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC7getLogsSay10Foundation3URLVGyF",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getLogFolderPath",
+            "printedName": "getLogFolderPath()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:23PassportNFCProfessional6LoggerC16getLogFolderPathSSyF",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC16getLogFolderPathSSyF",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "exportLogFile",
+            "printedName": "exportLogFile()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.URL?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:23PassportNFCProfessional6LoggerC13exportLogFile10Foundation3URLVSgyF",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC13exportLogFile10Foundation3URLVSgyF",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "exportAllLogs",
+            "printedName": "exportAllLogs()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.URL?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:23PassportNFCProfessional6LoggerC13exportAllLogs10Foundation3URLVSgyF",
+            "mangledName": "$s23PassportNFCProfessional6LoggerC13exportAllLogs10Foundation3URLVSgyF",
+            "moduleName": "PassportNFCProfessional",
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:23PassportNFCProfessional6LoggerC",
+        "mangledName": "$s23PassportNFCProfessional6LoggerC",
+        "moduleName": "PassportNFCProfessional",
+        "declAttributes": [
+          "Final",
+          "AccessControl"
+        ],
+        "hasMissingDesignatedInitializers": true,
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "PassportNFCProfessional",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
         "name": "CryptoTokenKit",
         "printedName": "CryptoTokenKit",
         "declKind": "Import",
@@ -4784,6 +5579,7 @@
         "intro_tvOS": "9.0",
         "intro_watchOS": "2.0",
         "declAttributes": [
+          "AddressableForDependencies",
           "Frozen",
           "Available",
           "Available",
@@ -5149,6 +5945,13 @@
           },
           {
             "kind": "Conformance",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP",
+            "mangledName": "$ss16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
             "name": "Sequence",
             "printedName": "Sequence",
             "children": [
@@ -5274,6 +6077,35 @@
             ],
             "usr": "s:s21_ObjectiveCBridgeableP",
             "mangledName": "$ss21_ObjectiveCBridgeableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Transferable",
+            "printedName": "Transferable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Representation",
+                "printedName": "Representation",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "OpaqueTypeArchetype",
+                    "printedName": "some CoreTransferable.TransferRepresentation",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "TransferRepresentation",
+                        "printedName": "CoreTransferable.TransferRepresentation",
+                        "usr": "s:16CoreTransferable22TransferRepresentationP"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "usr": "s:16CoreTransferable0B0P",
+            "mangledName": "$s16CoreTransferable0B0P"
           }
         ]
       }
@@ -5282,266 +6114,357 @@
   },
   "ConstValues": [
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/Utility.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Utility.swift",
       "kind": "StringLiteral",
       "offset": 3936,
       "length": 18,
       "value": "\"0000000000000000\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/Utility.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Utility.swift",
       "kind": "StringLiteral",
       "offset": 4866,
       "length": 18,
       "value": "\"0000000000000000\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/Utility.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Utility.swift",
       "kind": "StringLiteral",
       "offset": 12741,
       "length": 10,
       "value": "\"yyyyMMdd\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/Constant.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 352,
+      "length": 7,
+      "value": "\"DEBUG\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 380,
+      "length": 6,
+      "value": "\"INFO\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 408,
+      "length": 7,
+      "value": "\"ERROR\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "BooleanLiteral",
+      "offset": 461,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 504,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 508,
+      "length": 4,
+      "value": "1024"
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 515,
+      "length": 4,
+      "value": "1024"
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 566,
+      "length": 1,
+      "value": "5"
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 668,
+      "length": 15,
+      "value": "\"FrameworkLogs\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 711,
+      "length": 13,
+      "value": "\"current.log\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 1028,
+      "length": 14,
+      "value": "\"logger.queue\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 1108,
+      "length": 19,
+      "value": "\"com.yourframework\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Logger.swift",
+      "kind": "StringLiteral",
+      "offset": 1139,
+      "length": 5,
+      "value": "\"log\""
+    },
+    {
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Constant.swift",
       "kind": "Dictionary",
       "offset": 192,
       "length": 7546,
       "value": "[(\"AND\", \"Andorran\"), (\"ARE\", \"Emirati\"), (\"AFG\", \"Afghan\"), (\"ATG\", \"Antiguan, Barbudan\"), (\"AIA\", \"Anguillian\"), (\"ALB\", \"Albanian\"), (\"ARM\", \"Armenian\"), (\"ANT\", \"Dutch\"), (\"AGO\", \"Angolan\"), (\"ATA\", \"Antarctica\"), (\"ARG\", \"Argentinean\"), (\"ASM\", \"American Samoan\"), (\"AUT\", \"Austrian\"), (\"AUS\", \"Australian\"), (\"ABW\", \"Aruban\"), (\"ALA\", \"Swedish\"), (\"AZE\", \"Azerbaijani\"), (\"BIH\", \"Bosnian, Herzegovinian\"), (\"BRB\", \"Barbadian\"), (\"BGD\", \"Bangladeshi\"), (\"BEL\", \"Belgian\"), (\"BFA\", \"Burkinabe\"), (\"BGR\", \"Bulgarian\"), (\"BHR\", \"Bahraini\"), (\"BDI\", \"Burundian\"), (\"BEN\", \"Beninese\"), (\"BLM\", \"Saint Barthélemy Islander\"), (\"BMU\", \"Bermudian\"), (\"BRN\", \"Bruneian\"), (\"BOL\", \"Bolivian\"), (\"BES\", \"Dutch\"), (\"BRA\", \"Brazilian\"), (\"BHS\", \"Bahamian\"), (\"BTN\", \"Bhutanese\"), (\"BVT\", \"Bouvet Island\"), (\"BWA\", \"Motswana\"), (\"BLR\", \"Belarusian\"), (\"BLZ\", \"Belizean\"), (\"CAN\", \"Canadian\"), (\"CCK\", \"Cocos Islander\"), (\"COD\", \"Congolese\"), (\"CAF\", \"Central African\"), (\"COG\", \"Congolese\"), (\"CHE\", \"Swiss\"), (\"CIV\", \"Ivorian\"), (\"COK\", \"Cook Islander\"), (\"CHL\", \"Chilean\"), (\"CMR\", \"Cameroonian\"), (\"CHN\", \"Chinese\"), (\"COL\", \"Colombian\"), (\"CRI\", \"Costa Rican\"), (\"SCG\", \"Montenegrins, Serbs\"), (\"CTE\", \"Canton and Enderbury Islands\"), (\"CUB\", \"Cuban\"), (\"CPV\", \"Cape Verdian\"), (\"CUW\", \"Curaçaoan\"), (\"CXR\", \"Christmas Island\"), (\"CYP\", \"Cypriot\"), (\"CZE\", \"Czech\"), (\"DEU\", \"German\"), (\"DJI\", \"Djibouti\"), (\"DNK\", \"Danish\"), (\"DMA\", \"Dominican\"), (\"DOM\", \"Dominican\"), (\"DZA\", \"Algerian\"), (\"ECU\", \"Ecuadorean\"), (\"EST\", \"Estonian\"), (\"EGY\", \"Egyptian\"), (\"ESH\", \"Sahrawi\"), (\"ERI\", \"Eritrean\"), (\"ESP\", \"Spanish\"), (\"ETH\", \"Ethiopian\"), (\"FIN\", \"Finnish\"), (\"FJI\", \"Fijian\"), (\"FLK\", \"Falkland Islander\"), (\"FSM\", \"Micronesian\"), (\"FRO\", \"Faroese\"), (\"ATF\", \"French\"), (\"FRA\", \"French\"), (\"FXX\", \"Metropolitan France\"), (\"GAB\", \"Gabonese\"), (\"GBR\", \"British\"), (\"GRD\", \"Grenadian\"), (\"GEO\", \"Georgian\"), (\"GUF\", \"French Guiana\"), (\"GGY\", \"Channel Islander\"), (\"GHA\", \"Ghanaian\"), (\"GIB\", \"Gibraltar\"), (\"GRL\", \"Greenlandic\"), (\"GMB\", \"Gambian\"), (\"GIN\", \"Guinean\"), (\"GLP\", \"Guadeloupian\"), (\"GNQ\", \"Equatorial Guinean\"), (\"GRC\", \"Greek\"), (\"SGS\", \"South Georgia and the South Sandwich Islander\"), (\"GTM\", \"Guatemalan\"), (\"GUM\", \"Guamanian\"), (\"GNB\", \"Guinea-Bissauan\"), (\"GUY\", \"Guyanese\"), (\"HKG\", \"Chinese\"), (\"HMD\", \"Heard and McDonald Islander\"), (\"HND\", \"Honduran\"), (\"HRV\", \"Croatian\"), (\"HTI\", \"Haitian\"), (\"HUN\", \"Hungarian\"), (\"IDN\", \"Indonesian\"), (\"IRL\", \"Irish\"), (\"ISR\", \"Israeli\"), (\"IMN\", \"Manx\"), (\"IND\", \"Indian\"), (\"IOT\", \"Indian\"), (\"IRQ\", \"Iraqi\"), (\"IRN\", \"Iranian\"), (\"ISL\", \"Icelander\"), (\"ITA\", \"Italian\"), (\"JEY\", \"Channel Islander\"), (\"JAM\", \"Jamaican\"), (\"JOR\", \"Jordanian\"), (\"JPN\", \"Japanese\"), (\"JTN\", \"Johnston Island\"), (\"KEN\", \"Kenyan\"), (\"KGZ\", \"Kirghiz\"), (\"KHM\", \"Cambodian\"), (\"KIR\", \"I-Kiribati\"), (\"COM\", \"Comoran\"), (\"KNA\", \"Kittian and Nevisian\"), (\"PRK\", \"North Korean\"), (\"KOR\", \"South Korean\"), (\"KWT\", \"Kuwaiti\"), (\"CYM\", \"Caymanian\"), (\"KAZ\", \"Kazakhstani\"), (\"LAO\", \"Laotian\"), (\"LBN\", \"Lebanese\"), (\"LCA\", \"Saint Lucian\"), (\"LIE\", \"Liechtensteiner\"), (\"LKA\", \"Sri Lankan\"), (\"LBR\", \"Liberian\"), (\"LSO\", \"Mosotho\"), (\"LTU\", \"Lithuanian\"), (\"LUX\", \"Luxembourger\"), (\"LVA\", \"Latvian\"), (\"LBY\", \"Libyan\"), (\"MAR\", \"Moroccan\"), (\"MCO\", \"Monegasque\"), (\"MDA\", \"Moldovan\"), (\"MNE\", \"Montenegrin\"), (\"MAF\", \"Saint Martin Islander\"), (\"MDG\", \"Malagasy\"), (\"MHL\", \"Marshallese\"), (\"MID\", \"Midway Islands\"), (\"MKD\", \"Macedonian\"), (\"MLI\", \"Malian\"), (\"MMR\", \"Myanmar\"), (\"MNG\", \"Mongolian\"), (\"MAC\", \"Chinese\"), (\"MNP\", \"American\"), (\"MTQ\", \"French\"), (\"MRT\", \"Mauritanian\"), (\"MSR\", \"Montserratian\"), (\"MLT\", \"Maltese\"), (\"MUS\", \"Mauritian\"), (\"MDV\", \"Maldivan\"), (\"MWI\", \"Malawian\"), (\"MEX\", \"Mexican\"), (\"MYS\", \"Malaysian\"), (\"MOZ\", \"Mozambican\"), (\"NAM\", \"Namibian\"), (\"NCL\", \"New Caledonian\"), (\"NER\", \"Nigerian\"), (\"NFK\", \"Norfolk Islander\"), (\"NGA\", \"Nigerian\"), (\"NIC\", \"Nicaraguan\"), (\"NLD\", \"Dutch\"), (\"NOR\", \"Norwegian\"), (\"NPL\", \"Nepalese\"), (\"ATN\", \"Dronning Maud Land\"), (\"NRU\", \"Nauruan\"), (\"NTZ\", \"Neutral Zone\"), (\"NIU\", \"Niuean\"), (\"NZL\", \"New Zealander\"), (\"OMN\", \"Omani\"), (\"PAN\", \"Panamanian\"), (\"PCI\", \"Pacific Islands Trust Territory\"), (\"PER\", \"Peruvian\"), (\"PYF\", \"French Polynesian\"), (\"PNG\", \"Papua New Guinean\"), (\"PHL\", \"Filipino\"), (\"PAK\", \"Pakistani\"), (\"POL\", \"Polish\"), (\"SPM\", \"French\"), (\"PCN\", \"Pitcairn Islander\"), (\"PRI\", \"Puerto Rican\"), (\"PSE\", \"Palestinian\"), (\"PRT\", \"Portuguese\"), (\"PUS\", \"U.S. Miscellaneous Pacific Islands\"), (\"PLW\", \"Palauan\"), (\"PRY\", \"Paraguayan\"), (\"PCZ\", \"Panama Canal Zone\"), (\"QAT\", \"Qatari\"), (\"REU\", \"French\"), (\"ROU\", \"Romanian\"), (\"SRB\", \"Serbian\"), (\"RUS\", \"Russian\"), (\"RWA\", \"Rwandan\"), (\"SAU\", \"Saudi Arabian\"), (\"SLB\", \"Solomon Islander\"), (\"SYC\", \"Seychellois\"), (\"SDN\", \"Sudanese\"), (\"SWE\", \"Swedish\"), (\"SGP\", \"Singaporean\"), (\"SHN\", \"Saint Helenian\"), (\"SVN\", \"Slovene\"), (\"SJM\", \"Norwegian\"), (\"SVK\", \"Slovak\"), (\"SLE\", \"Sierra Leonean\"), (\"SMR\", \"Sammarinese\"), (\"SEN\", \"Senegalese\"), (\"SOM\", \"Somali\"), (\"SUR\", \"Surinamer\"), (\"STP\", \"Sao Tomean\"), (\"SLV\", \"Salvadoran\"), (\"SYR\", \"Syrian\"), (\"SWZ\", \"Swazi\"), (\"TCA\", \"Turks and Caicos Islander\"), (\"TCD\", \"Chadian\"), (\"TGO\", \"Togolese\"), (\"THA\", \"Thai\"), (\"TJK\", \"Tadzhik\"), (\"TKL\", \"Tokelauan\"), (\"TLS\", \"East Timorese\"), (\"TKM\", \"Turkmen\"), (\"TUN\", \"Tunisian\"), (\"TON\", \"Tongan\"), (\"TUR\", \"Turkish\"), (\"TTO\", \"Trinidadian\"), (\"TUV\", \"Tuvaluan\"), (\"TWN\", \"Taiwanese\"), (\"TZA\", \"Tanzanian\"), (\"UKR\", \"Ukrainian\"), (\"UGA\", \"Ugandan\"), (\"UMI\", \"American\"), (\"USA\", \"American\"), (\"URY\", \"Uruguayan\"), (\"UZB\", \"Uzbekistani\"), (\"VAT\", \"Italian\"), (\"VCT\", \"Saint Vincentian\"), (\"VDR\", \"North Vietnam\"), (\"VEN\", \"Venezuelan\"), (\"VGB\", \"Virgin Islander\"), (\"VIR\", \"Virgin Islander\"), (\"VNM\", \"Vietnamese\"), (\"VUT\", \"Ni-Vanuatu\"), (\"WLF\", \"Wallis and Futuna Islander\"), (\"WAK\", \"Wake Island\"), (\"WSM\", \"Samoan\"), (\"YEM\", \"Yemeni\"), (\"MYT\", \"French\"), (\"ZAF\", \"South African\"), (\"ZMB\", \"Zambian\"), (\"ZWE\", \"Zimbabwean\")]"
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/Constant.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/Constant.swift",
       "kind": "Dictionary",
       "offset": 7785,
       "length": 8151,
       "value": "[(\"AFG\", \"AFGHANISTAN\"), (\"ALB\", \"ALBANIA\"), (\"DZA\", \"ALGERIA\"), (\"ASM\", \"AMERICAN SAMOA\"), (\"AND\", \"ANDORRA\"), (\"AGO\", \"ANGOLA\"), (\"AIA\", \"ANGUILLA\"), (\"ATA\", \"ANTARCTICA\"), (\"ATG\", \"ANTIGUA AND BARBUDA\"), (\"ARG\", \"ARGENTINA\"), (\"ARM\", \"ARMENIA\"), (\"ABW\", \"ARUBA\"), (\"AUS\", \"AUSTRALIA\"), (\"AUT\", \"AUSTRIA\"), (\"AZE\", \"AZERBAIJAN\"), (\"BHS\", \"BAHAMAS\"), (\"BHR\", \"BAHRAIN\"), (\"BGD\", \"BANGLADESH, PEOPLES REPUBLIC OF\"), (\"BRB\", \"BARBADOS\"), (\"BLR\", \"BELARUS\"), (\"BYS\", \"BELARUSSIAN SSR\"), (\"BEL\", \"BELGIUM\"), (\"BLZ\", \"BELIZE\"), (\"BEN\", \"BENIN\"), (\"BMU\", \"BERMUDA\"), (\"BTN\", \"BHUTAN\"), (\"BOL\", \"BOLIVIA\"), (\"BIH\", \"BOSNIA HERZEGGOVINA\"), (\"BWA\", \"BOTSWANA\"), (\"BVT\", \"BOUVET ISLAND\"), (\"BRA\", \"BRAZIL\"), (\"GBD\", \"BRITISH DEPENDENT TERRITORIES\"), (\"IOT\", \"BRITISH INDIAN OCEAN TERRITORY\"), (\"GBN\", \"BRITISH NATIONAL\"), (\"GBO\", \"BRITISH OVERSEAS CITIZEN\"), (\"GBP\", \"BRITISH PROTECTED PERSON\"), (\"GBS\", \"BRITISH SUBJECT\"), (\"VGB\", \"BRITISH VIRGIN ISLANDS\"), (\"BRN\", \"BRUNEI\"), (\"BGR\", \"BULGARIA\"), (\"BFA\", \"BURKINA FASO\"), (\"BDI\", \"BURUNDI\"), (\"KHM\", \"CAMBODIA\"), (\"CMR\", \"CAMEROON, UNITED REPUBLIC OF\"), (\"CAN\", \"CANADA\"), (\"CTE\", \"CANTON AND ENDERBURY ISLANDS\"), (\"CPV\", \"CAPE VERDE\"), (\"CYM\", \"CAYMAN ISLANDS\"), (\"CAF\", \"CENTRAL AFRICAN REPUBLIC\"), (\"TCD\", \"CHAD\"), (\"CHL\", \"CHILE\"), (\"CHN\", \"CHINA\"), (\"CXR\", \"CHRISTMAS ISLAND\"), (\"CCK\", \"COCOS (KEELING) ISLANDS\"), (\"COL\", \"COLOMBIA\"), (\"COM\", \"COMOROS\"), (\"COD\", \"CONGO DEMOCRATIC REPUBLIC\"), (\"COG\", \"CONGO REPUBLIC OF\"), (\"COK\", \"COOK ISLANDS\"), (\"CRI\", \"COSTA RICA\"), (\"CIV\", \"COTE D'IVOIRE IVORY COAST\"), (\"HRV\", \"CROATIA, REPUBLIC OF\"), (\"CUB\", \"CUBA\"), (\"CYP\", \"CYPRUS\"), (\"CZE\", \"CZECH REPUBLIC\"), (\"DNK\", \"DENMARK\"), (\"DJI\", \"DJIBOUTI\"), (\"DMA\", \"DOMINICA, COMMONWEALTH OF\"), (\"DOM\", \"DOMINICAN REPUBLIC\"), (\"ATN\", \"DRONNING MAUD LAND\"), (\"TMP\", \"EAST TIMOR\"), (\"ECU\", \"ECUADOR\"), (\"EGY\", \"EGYPT\"), (\"SLV\", \"EL SALVADOR\"), (\"ENG\", \"ENGLAND\"), (\"GNQ\", \"EQUITORIAL GUINEA, REPUBLIC OF\"), (\"ERI\", \"ERITREA\"), (\"EST\", \"ESTONIA\"), (\"ETH\", \"ETHIOPIA\"), (\"FRO\", \"FAEROE ISLANDS\"), (\"FLK\", \"FALKLAND ISLANDS\"), (\"FJI\", \"FIJI\"), (\"FIN\", \"FINLAND\"), (\"FRA\", \"FRANCE\"), (\"FXX\", \"FRANCE, METROPOLITAN\"), (\"GUF\", \"FRENCH GUIANA\"), (\"PYF\", \"FRENCH POLYNESIA\"), (\"ATF\", \"FRENCH SOUTH TERRITORY\"), (\"GAB\", \"GABON\"), (\"GMB\", \"GAMBIA\"), (\"SGS\", \"GEORGIA\/SANDWICH ISLANDS\"), (\"GEO\", \"GEORGIA, REPUBLIC OF\"), (\"DDR\", \"GERMAN DEMOCRATIC REPUBLIC\"), (\"DEU\", \"GERMANY, FEDERAL REPUBLIC OF\"), (\"GHA\", \"GHANA\"), (\"GIB\", \"GIBRALTAR\"), (\"GRC\", \"GREECE\"), (\"GRL\", \"GREENLAND\"), (\"GRD\", \"GRENADA\"), (\"GLP\", \"GUADELOUPE\"), (\"GUM\", \"GUAM\"), (\"GTM\", \"GUATEMALA\"), (\"GIN\", \"GUINEA\"), (\"GNB\", \"GUINEA-BISSAU\"), (\"GUY\", \"GUYANA\"), (\"HTI\", \"HAITI\"), (\"HMD\", \"HEARD AND MCDONALD ISLANDS\"), (\"HND\", \"HONDURAS\"), (\"HKG\", \"HONG KONG\"), (\"BDT\", \"HONG KONG\"), (\"HUN\", \"HUNGARY\"), (\"ISL\", \"ICELAND\"), (\"IND\", \"INDIA\"), (\"IDN\", \"INDONESIA\"), (\"IRN\", \"IRAN\"), (\"IRQ\", \"IRAQ\"), (\"IRL\", \"IRELAND\"), (\"ISR\", \"ISRAEL\"), (\"ITA\", \"ITALY\"), (\"JAM\", \"JAMAICA\"), (\"JPN\", \"JAPAN\"), (\"JOR\", \"JORDAN\"), (\"KAZ\", \"KAZAKHSTAN, REPUBLIC OF\"), (\"KEN\", \"KENYA\"), (\"KIR\", \"KIRIBATI\"), (\"PRK\", \"KOREA DEMOCRATIC PEOPLES REPUB\"), (\"KOR\", \"KOREA, REPUBLIC OF\"), (\"KWT\", \"KUWAIT\"), (\"KGZ\", \"KYRGYZSTAN, REPUBLIC OF\"), (\"LAO\", \"LAO PEOPLE'S DEMOCRATIC\"), (\"LVA\", \"LATVIA, REPUBLIC OF\"), (\"LBN\", \"LEBANON\"), (\"LSO\", \"LESOTHO\"), (\"LBR\", \"LIBERIA\"), (\"LBY\", \"LIBYAN ARAB JAMAHIRIYA\"), (\"LIE\", \"LIECHTENSTEIN\"), (\"LTU\", \"LITHUANIA, REPUBLIC OF\"), (\"LUX\", \"LUXEMBOURG\"), (\"MAC\", \"MACAU\"), (\"MKD\", \"MACEDONIA\"), (\"MDG\", \"MADAGASCAR\"), (\"MWI\", \"MALAWI\"), (\"MYS\", \"MALAYSIA\"), (\"MDV\", \"MALDIVES, REPUBLIC OF\"), (\"MLI\", \"MALI\"), (\"MLT\", \"MALTA\"), (\"MHL\", \"MARSHALL ISLANDS REPUBLIC OF\"), (\"MTQ\", \"MARTINIQUE\"), (\"MRT\", \"MAURITANIA\"), (\"MUS\", \"MAURITIUS\"), (\"MYT\", \"MAYOTTE, TERRITORIAL COLL OF\"), (\"MEX\", \"MEXICO\"), (\"FSM\", \"MICRONESIA FEDERATED STATES OF\"), (\"MDA\", \"MOLDOVA, REPUBLIC OF\"), (\"MCO\", \"MONACO\"), (\"MNG\", \"MONGOLIA\"), (\"MSR\", \"MONTSERRAT\"), (\"MAR\", \"MOROCCO\"), (\"MOZ\", \"MOZAMBIQUE\"), (\"MMR\", \"MYANMAR\"), (\"NAM\", \"NAMIBIA\"), (\"NRU\", \"NAURU\"), (\"NPL\", \"NEPAL\"), (\"NLD\", \"NETHERLANDS\"), (\"ANT\", \"NETHERLANDS ANTILLES\"), (\"NTZ\", \"NEUTRAL ZONE\"), (\"NCL\", \"NEW CALEDONIA\"), (\"NZL\", \"NEW ZEALAND\"), (\"NIC\", \"NICARAGUA\"), (\"NER\", \"NIGER\"), (\"NGA\", \"NIGERIA\"), (\"NIU\", \"NIUE\"), (\"NFK\", \"NORFOLK ISLAND\"), (\"MNP\", \"NORTHERN MARIANAS\"), (\"NOR\", \"NORWAY\"), (\"OMN\", \"OMAN\"), (\"PAK\", \"PAKISTAN\"), (\"PLW\", \"PALAU, REPUBLIC OF\"), (\"PSE\", \"PALESTINIAN AUTHORITY\"), (\"PAN\", \"PANAMA\"), (\"PNG\", \"PAPUA NUI GUINI\"), (\"PRY\", \"PARAGUAY\"), (\"PER\", \"PERU\"), (\"PHL\", \"PHILIPPINES\"), (\"PCN\", \"PITCAIRN ISLAND\"), (\"POL\", \"POLAND\"), (\"PRT\", \"PORTUGAL\"), (\"PRI\", \"PUERTO RICO\"), (\"QAT\", \"QATAR\"), (\"XXC\", \"REFUGEE OTHERS\"), (\"XXB\", \"REFUGEE STATUS\"), (\"REU\", \"REUNION\"), (\"ROM\", \"ROMANIA\"), (\"RUS\", \"RUSSIAN FEDERATION\"), (\"RWA\", \"RWANDA\"), (\"WSM\", \"SAMOA\"), (\"SMR\", \"SAN MARINO\"), (\"STP\", \"SAO TOME AND PRINCIPE\"), (\"SAU\", \"SAUDI ARABIA\"), (\"SCO\", \"SCOTLAND\"), (\"SEN\", \"SENEGAL\"), (\"SYC\", \"SEYCHELLES\"), (\"SLE\", \"SIERRA LEONE\"), (\"SGP\", \"SINGAPORE\"), (\"SVK\", \"SLOVAK REPUBLIC\"), (\"SVN\", \"SLOVENIA\"), (\"SLB\", \"SOLOMON ISLANDS\"), (\"SOM\", \"SOMALIA\"), (\"ZAF\", \"SOUTH AFRICA\"), (\"ESP\", \"SPAIN\"), (\"LKA\", \"SRI LANKA\"), (\"SHN\", \"ST HELENA\"), (\"KNA\", \"ST KITTS NEVIS ANGUILLA\"), (\"LCA\", \"ST LUCIA\"), (\"SPM\", \"ST PIERRE AND MIQUELON\"), (\"VCT\", \"ST VINCENT AND THE GRENADINES\"), (\"XXA\", \"STATELESS PERSON\"), (\"SDN\", \"SUDAN\"), (\"SUR\", \"SURINAME\"), (\"SJM\", \"SVALBARD AND JAN MAYEN ISLANDS\"), (\"SWZ\", \"SWAZILAND\"), (\"SWE\", \"SWEDEN\"), (\"CHE\", \"SWITZERLAND\"), (\"SYR\", \"SYRIAN ARAB REPUBLIC\"), (\"TWN\", \"TAIWAN\"), (\"TJK\", \"TAJIKISTAN REPUBLIC\"), (\"TZA\", \"TANZANIA, UNITED REPUBLIC OF\"), (\"THA\", \"THAILAND\"), (\"TGO\", \"TOGO\"), (\"TKL\", \"TOKELAU\"), (\"TON\", \"TONGA\"), (\"TTO\", \"TRINIDAD AND TOBAGO\"), (\"TUN\", \"TUNISIA\"), (\"TUR\", \"TURKEY\"), (\"TKM\", \"TURKMENISTAN\"), (\"TCA\", \"TURKS AND CAICOS ISLANDS\"), (\"TUV\", \"TUVALU\"), (\"UGA\", \"UGANDA\"), (\"UKR\", \"UKRAINIAN SSR\"), (\"ARE\", \"UNITED ARAB EMIRATES\"), (\"GBR\", \"UNITED KINGDOM\"), (\"UNA\", \"UNITED NATIONS AGENCY\"), (\"UNO\", \"UNITED NATIONS ORGANISATION\"), (\"USA\", \"UNITED STATES OF AMERICA\"), (\"VIR\", \"UNITED STATES VIRGIN ISLANDS\"), (\"XXX\", \"UNSPECIFIED NATIONALITY\"), (\"URY\", \"URUGUAY\"), (\"UMI\", \"US MINOR ISLANDS\"), (\"UZB\", \"UZBEKISTAN, REPUBLIC OF\"), (\"VUT\", \"VANUATU ACTIVE 09 JAN 2005\"), (\"VAT\", \"VATICAN CITY STATE (HOLY SEE)\"), (\"VEN\", \"VENEZUELA\"), (\"VNM\", \"VIETNAM\"), (\"WAL\", \"WALES\"), (\"WLF\", \"WALLIS AND FUTUNA ISLANDS\"), (\"ESH\", \"WESTERN SAHARA\"), (\"YEM\", \"YEMEN\"), (\"YMD\", \"YEMEN, DEMOCRATIC\"), (\"YUG\", \"YUGOSLAVIA\"), (\"ZAR\", \"ZAIRE\"), (\"ZMB\", \"ZAMBIA\"), (\"ZWE\", \"ZIMBABWE\")]"
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportModel.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportModel.swift",
       "kind": "StringLiteral",
       "offset": 1588,
       "length": 3,
       "value": "\"N\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 528,
       "length": 6,
       "value": "\"011E\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 563,
       "length": 6,
       "value": "\"011C\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 591,
       "length": 6,
       "value": "\"2F01\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 619,
       "length": 6,
       "value": "\"2F00\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 645,
       "length": 6,
       "value": "\"0101\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 671,
       "length": 6,
       "value": "\"0102\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 697,
       "length": 6,
       "value": "\"0103\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 723,
       "length": 6,
       "value": "\"0104\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 749,
       "length": 6,
       "value": "\"0105\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 775,
       "length": 6,
       "value": "\"0106\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 801,
       "length": 6,
       "value": "\"0107\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 827,
       "length": 6,
       "value": "\"0108\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 853,
       "length": 6,
       "value": "\"0109\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 880,
       "length": 6,
       "value": "\"010A\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 907,
       "length": 6,
       "value": "\"010B\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 934,
       "length": 6,
       "value": "\"010C\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 961,
       "length": 6,
       "value": "\"010D\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 988,
       "length": 6,
       "value": "\"010E\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1015,
       "length": 6,
       "value": "\"010F\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1042,
       "length": 6,
       "value": "\"0110\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "Dictionary",
       "offset": 1097,
       "length": 409,
       "value": "[(\"60\", \"COM\"), (\"61\", \"DG1\"), (\"75\", \"DG2\"), (\"63\", \"DG3\"), (\"76\", \"DG4\"), (\"65\", \"DG5\"), (\"66\", \"DG6\"), (\"67\", \"DG7\"), (\"68\", \"DG8\"), (\"69\", \"DG9\"), (\"6A\", \"DG10\"), (\"6B\", \"DG11\"), (\"6C\", \"DG12\"), (\"6D\", \"DG13\"), (\"6E\", \"DG14\"), (\"6F\", \"DG15\"), (\"70\", \"DG16\"), (\"77\", \"SOD\")]"
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1566,
       "length": 26,
       "value": "\"00A4040007A0000002471001\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1623,
       "length": 28,
       "value": "\"00A4040007A000000247100100\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1685,
       "length": 12,
       "value": "\"0084000008\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "FloatLiteral",
       "offset": 1897,
       "length": 3,
       "value": "0.0"
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "FloatLiteral",
       "offset": 1930,
       "length": 3,
       "value": "0.0"
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1960,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1978,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 1997,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "StringLiteral",
       "offset": 2016,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "Dictionary",
       "offset": 2057,
       "length": 183,
       "value": "[(\"A\", 10), (\"B\", 11), (\"C\", 12), (\"D\", 13), (\"E\", 14), (\"F\", 15), (\"G\", 16), (\"H\", 17), (\"I\", 18), (\"J\", 19), (\"K\", 20), (\"L\", 21), (\"M\", 22), (\"N\", 23), (\"O\", 24), (\"P\", 25), (\"Q\", 26), (\"R\", 27), (\"S\", 28), (\"T\", 29), (\"U\", 30), (\"V\", 31), (\"W\", 32), (\"X\", 33), (\"Y\", 34), (\"Z\", 35)]"
     },
     {
-      "filePath": "\/Users\/far-izlengha\/Documents\/Working\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
+      "filePath": "\/Users\/mac\/Desktop\/bay\/PassportNFCProfessional\/PassportNFCProfessional\/PassportController.swift",
       "kind": "Array",
       "offset": 2264,
       "length": 7,
