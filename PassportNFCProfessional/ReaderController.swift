@@ -68,6 +68,8 @@ public class ReaderController
             for reader in mngr!.slotNames {
                 if reader == "Feitian R502   " {
                     return "Feitian R502   "
+                }else if reader == "Circle CIR315 Dual" {
+                    return "Circle CIR315 Dual"
                 }
             }
             
@@ -114,6 +116,8 @@ public class ReaderController
         }
     }
     
+
+    
     // End Card Session
     func endCardSession(){
         if card != nil {
@@ -126,5 +130,133 @@ public class ReaderController
 //            print("LIB >>> END CARD SESSION FAIL")
         }
         
+    }
+}
+
+
+extension ReaderController{
+    // Transmit APDU to Card
+    // MARK: - Transmit
+
+    func transmitCardAPDU(
+
+        card: TKSmartCard,
+
+        apdu: APDUCommand
+
+    ) async throws -> ResponseAPDU {
+
+        let requestData = apdu.toData()
+
+        let response = try await card.transmit(requestData)
+
+        guard response.count >= 2 else {
+
+            throw NSError(domain: "APDU", code: -1)
+            delegate?.onErrorOccur(errorMessage: "Send APDU Command Error", isError: true)
+
+        }
+
+        let sw1 = response[response.count - 2]
+
+        let sw2 = response[response.count - 1]
+
+        let responseData = response.dropLast(2)
+
+        return ResponseAPDU(
+
+            data: [UInt8](responseData),
+
+            sw1: sw1,
+
+            sw2: sw2
+
+        )
+
+    }
+    
+//    // MARK: - Transmit (Tuple Version)
+//
+//    func transmitCardAPDUTuple(
+//
+//        card: TKSmartCard,
+//
+//        apdu: APDUCommand
+//
+//    ) async throws -> ([UInt8], UInt8, UInt8) {
+//
+//        let requestData = apdu.toData()
+//
+//        let response = try await card.transmit(requestData)
+//
+//        guard response.count >= 2 else {
+//
+//            throw NSError(
+//                domain: "APDU",
+//                code: -1
+//            )
+//        }
+//
+//        // Status words
+//        let sw1 = response[response.count - 2]
+//
+//        let sw2 = response[response.count - 1]
+//
+//        // Response payload
+//        let responseData = [UInt8](response.dropLast(2))
+//
+//        return (
+//            responseData,
+//            sw1,
+//            sw2
+//        )
+//    }
+    
+    // MARK: - Transmit (Tuple Version)
+
+    func transmitCardAPDUTuple(
+
+        card: TKSmartCard,
+
+        apdu: APDUCommand
+
+    ) async throws -> (Data, UInt8, UInt8) {
+
+        let requestData = apdu.toData()
+
+        let response = try await card.transmit(requestData)
+
+        guard response.count >= 2 else {
+
+            throw NSError(
+
+                domain: "APDU",
+
+                code: -1
+
+            )
+
+        }
+
+        // SW1 SW2
+
+        let sw1 = response[response.count - 2]
+
+        let sw2 = response[response.count - 1]
+
+        // Payload
+
+        let responseData = Data(response.dropLast(2))
+
+        return (
+
+            responseData,
+
+            sw1,
+
+            sw2
+
+        )
+
     }
 }

@@ -10,6 +10,8 @@ import CryptoTokenKit
 import CryptoKit
 import CommonCrypto
 import UIKit
+import OSLog
+
 
 public protocol PassportControllerDelegate{
     func onProgressReadPassportData(progress:Float)
@@ -20,6 +22,18 @@ public protocol PassportControllerDelegate{
 
 public class PassportController
 {
+    private var passport:NFCPassportModel = NFCPassportModel()
+    var secureMessaging : SecureMessaging?
+    private var bacHandler : BACHandler?
+    private var currentlyReadingDataGroup : DataGroupId?
+    private var caHandler : ChipAuthenticationHandler?
+    private var dataGroupsToRead : [DataGroupId] = []
+    private var readAllDatagroups = false
+    private var skipSecureElements = true
+    private var skipCA = false
+    private var skipPACE = false
+    private var mrzKey : String = ""
+    var maxDataLengthToRead : Int = 0xA0  // Should be able to use 256 to read arbitrary amounts of data at full speed BUT this isn't supported across all passports so for reliability just use the smaller amount.
 
     
     enum FileID : String{
@@ -79,6 +93,7 @@ public class PassportController
     var isCardSessionBegin:Bool?
     let util:Utility?
     var data:PassportModel?
+    
     var progress:Float = 0.0
     var eachProgress:Float = 0.0
     var slotName:String = ""
@@ -1911,8 +1926,8 @@ public class PassportController
         let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
         let birth = dob + getChecksum(data: dob)
         let exp = doe + getChecksum(data: doe)
-        let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
-        print(mrz)
+        mrzKey = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         
         // Plus for external authen
         eachProgress += 2.0
@@ -1934,46 +1949,620 @@ public class PassportController
         
         Task.init{
             
-            let isSuccess = await BasicAccessControl(mrz: mrz)
-            progress += eachProgress
-            delegate?.onProgressReadPassportData(progress: progress)
-            
-            if isSuccess {
+            // Check that support for PACE or not
+            do{
                 
-                // in case of checking full year with issue date of document
-                
-                await readDG12()
-                progress += eachProgress
-                delegate?.onProgressReadPassportData(progress: progress)
-                
-                
-                if dg1 {
-                    await readDG1()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                if isSmartCardInitialized! {
+                    isCardSessionBegin = await rmngr.beginCardSession()
+                    delegate?.onBeginCardSession(isSuccess: isCardSessionBegin!)
                 }
                 
-                if dg2 {
-                    await readDG2()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                if isCardSessionBegin ??  false {
+                    
+                    let data = try await readCardAccess()
+                    Logger.passportController.debug( "Read CardAccess - data \(binToHexRep(data))" )
+                    let cardAccess = try CardAccess(data)
+                    passport.cardAccess = cardAccess
+                    
+                    Logger.passportController.info( "Starting Password Authenticated Connection Establishment (PACE)" )
+                    
+                    let paceHandler = try PACEHandler( cardAccess: cardAccess, pc: self )
+                    
+                    try await paceHandler.doPACE(mrzKey: mrzKey )
+                    passport.PACEStatus = .success
+                    Logger.passportReader.debug( "PACE Succeeded" )
+                    
+                    _ = try await selectPassportApplication()
+                    
+                }else{
+                    delegate?.onErrorOccur(errorMessage: "Card Session not started", isError: true)
                 }
                 
-                if dg11 {
-                    await readDG11()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                if passport.PACEStatus != .success {
+                    do{
+                        try await doBACAuthentication(mrz: mrzKey )
+                    }catch{
+                        delegate?.onErrorOccur(errorMessage: "\(error)", isError: true)
+                    }
                 }
                 
+                try await readDataGroups()
                 
-                delegate?.onCompleteReadPassportData(data: data!)
-               
+//                try await doActiveAuthenticationIfNeccessary(tagReader : tagReader)
+//
+//                self.updateReaderSessionMessage(alertMessage: NFCViewDisplayMessage.successfulRead)
+//                self.shouldNotReportNextReaderSessionInvalidationErrorUserCanceled = true
+
+
+                // If we have a masterlist url set then use that and verify the passport now
+//                self.passport.verifyPassport(masterListURL: self.masterListURL, useCMSVerification: self.passiveAuthenticationUsesOpenSSL)
+
+//                return self.passport
+                
+                Logger.passportController.debug("\(self.passport.documentNumber)")
+                
+                
+                
+            }catch{
+                // PACE Failed
+                delegate?.onErrorOccur(errorMessage: "\(error)", isError: true)
             }
+            
+//            let isSuccess = await BasicAccessControl(mrz: mrz)
+//            progress += eachProgress
+//            delegate?.onProgressReadPassportData(progress: progress)
+//            
+//            if isSuccess {
+//                
+//                // in case of checking full year with issue date of document
+//                
+//                await readDG12()
+//                progress += eachProgress
+//                delegate?.onProgressReadPassportData(progress: progress)
+//                
+//                
+//                if dg1 {
+//                    await readDG1()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }
+//                
+//                if dg2 {
+//                    await readDG2()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }
+//                
+//                if dg11 {
+//                    await readDG11()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }
+//                
+//                
+//                delegate?.onCompleteReadPassportData(data: data!)
+//               
+//            }
 
             rmngr.endCardSession()
         }
         
     }
+}
+
+
+extension PassportController{
+    
+    func readCardAccess() async throws -> [UInt8]{
+        // Info provided by @smulu
+        // By default NFCISO7816Tag requirers a list of ISO/IEC 7816 applets (AIDs). Upon discovery of NFC tag the first found applet from this list is automatically selected (and you have no way of changing this).
+        // This is a problem for PACE protocol becaues it requires reading parameters from file EF.CardAccess which lies outside of eMRTD applet (AID: A0000002471001) in the master file.
+        
+        // Now, the ICAO 9303 standard does specify command for selecting master file by sending SELECT APDU with P1=0x00, P2=0x0C and empty data field (see part 10 page 8). But after some testing I found out this command doesn't work on some passports (European passports) and although receiving success (sw=9000) from passport the master file is not selected.
+        
+        // After a bit of researching standard ISO/IEC 7816 I found there is an alternative SELECT command for selecting master file. The command doesn't differ much from the command specified in ICAO 9303 doc with only difference that data field is set to: 0x3F00. See section 6.11.3 of ISO/IEC 7816-4.
+        // By executing above SELECT command (with data=0x3F00) master file should be selected and you should be able to read EF.CardAccess from passport.
+        
+        // First select master file
+        
+        
+        let cmd : APDUCommand = APDUCommand(instructionClass: 0x00, instructionCode: 0xA4, p1Parameter: 0x00, p2Parameter: 0x0C, data: Data([0x3f,0x00]), expectedResponseLength: -1)
+        
+        _ = try await send( cmd: cmd)
+            
+        // Now read EC.CardAccess
+        let data = try await self.selectFileAndRead(tag: [0x01,0x1C])
+        return data
+    }
+    
+    func send( cmd: APDUCommand, useExtendedMode : Bool = false ) async throws -> ResponseAPDU {
+        Logger.passportController.debug("TagReader - sending \(cmd)" )
+        var toSend = cmd
+        if let sm = secureMessaging {
+            toSend = try sm.protect(apdu:cmd, useExtendedMode: useExtendedMode)
+            Logger.passportController.debug("TagReader - [SM] \(toSend)" )
+        }
+        
+//        var (data, sw1, sw2) = try await tag.sendCommand(apdu: toSend)
+        var (data,sw1,sw2) = try await rmngr.transmitCardAPDUTuple(card: rmngr.card!, apdu: toSend)
+        Logger.passportController.debug( "TagReader - Received response, size \(data.count)b" )
+
+        // Some commands may have bigger response than expected. Read the whole response using INS 0xC0 (GET RESPONSE).
+        while (sw1 == 0x61) {
+            let getResponseCmd = APDUCommand(instructionClass: 0x0, instructionCode: 0xC0, p1Parameter: 0x0, p2Parameter: 0x0, data: Data(), expectedResponseLength: Int(sw2))
+            let nextSegment: Data
+            // Overwrite sw1 and sw2.
+            (nextSegment, sw1, sw2) = try await rmngr.transmitCardAPDUTuple(card: rmngr.card!, apdu: getResponseCmd)
+            Logger.passportController.debug("Read remaining data. Accumulated: \(data.count + nextSegment.count)b. Last batch \(nextSegment.count)b. Still remaining: \(sw2)b")
+            data += nextSegment
+        }
+
+        var rep = ResponseAPDU(data: [UInt8](data), sw1: sw1, sw2: sw2)
+        
+        if let sm = self.secureMessaging {
+            rep = try sm.unprotect(rapdu:rep)
+            Logger.passportController.debug("\(String(format:"TagReader [SM - unprotected] \(binToHexRep(rep.data, asArray:true)), sw1:0x%02x sw2:0x%02x", rep.sw1, rep.sw2))" )
+        } else {
+            Logger.passportController.debug("\(String(format:"TagReader [unprotected] \(binToHexRep(rep.data, asArray:true)), sw1:0x%02x sw2:0x%02x", rep.sw1, rep.sw2))" )
+            
+        }
+        
+        if rep.sw1 != 0x90 && rep.sw2 != 0x00 {
+            Logger.passportController.error( "Error reading tag: sw1 - 0x\(binToHexRep(sw1)), sw2 - 0x\(binToHexRep(sw2))" )
+            let tagError: NFCPassportReaderError
+            if (rep.sw1 == 0x63 && rep.sw2 == 0x00) {
+                tagError = NFCPassportReaderError.InvalidMRZKey
+            } else {
+                let errorMsg = self.decodeError(sw1: rep.sw1, sw2: rep.sw2)
+                Logger.passportController.error( "reason: \(errorMsg)" )
+                tagError = NFCPassportReaderError.ResponseError( errorMsg, sw1, sw2 )
+            }
+            throw tagError
+        }
+
+        return rep
+    }
+    
+    
+    func selectFileAndRead( tag: [UInt8]) async throws -> [UInt8] {
+        var resp = try await selectFile(tag: tag )
+            
+        // Read first 4 bytes of header to see how big the data structure is
+//        guard let readHeaderCmd = APDUCommand(bytes:[0x00, 0xB0, 0x00, 0x00, 0x00, 0x00,0x04]) else {
+//            throw NFCPassportReaderError.UnexpectedError
+//        }
+        let readHeaderCmd = APDUCommand(instructionClass: 0x00, instructionCode: 0xB0, p1Parameter: 0x00, p2Parameter: 0x00,data: Data([0x00]),expectedResponseLength: 0x0004);
+        resp = try await self.send( cmd: readHeaderCmd )
+
+        // Header looks like:  <tag><length of data><nextTag> e.g.60145F01 -
+        // the total length is the 2nd value plus the two header 2 bytes
+        // We've read 4 bytes so we now need to read the remaining bytes from offset 4
+        let (len, o) = try! asn1Length([UInt8](resp.data[1..<4]))
+        var remaining = Int(len)
+        var amountRead = o + 1
+        
+        var data = [UInt8](resp.data[..<amountRead])
+        
+        Logger.tagReader.debug( "TagReader - Number of data bytes to read - \(remaining)" )
+        
+        var readAmount : Int = maxDataLengthToRead
+        while remaining > 0 {
+            if maxDataLengthToRead != 256 && remaining < maxDataLengthToRead {
+                readAmount = remaining
+            }
+
+//            self.progress?( Int(Float(amountRead) / Float(remaining+amountRead ) * 100))
+            let offset = intToBin(amountRead, pad:4)
+
+            Logger.tagReader.debug( "TagReader - data bytes remaining: \(remaining), will read : \(readAmount)" )
+            let cmd = APDUCommand(
+                instructionClass: 00,
+                instructionCode: 0xB0,
+                p1Parameter: offset[0],
+                p2Parameter: offset[1],
+                data: Data(),
+                expectedResponseLength: readAmount
+            )
+            resp = try await self.send( cmd: cmd )
+
+            Logger.tagReader.debug( "TagReader - got resp - \(binToHexRep(resp.data, asArray: true)), sw1 : \(resp.sw1), sw2 : \(resp.sw2)" )
+            data += resp.data
+            
+            remaining -= resp.data.count
+            amountRead += resp.data.count
+            Logger.tagReader.debug( "TagReader - Amount of data left to read - \(remaining)" )
+        }
+        
+        return data
+    }
+    
+    func selectFile( tag: [UInt8] ) async throws -> ResponseAPDU {
+        
+        let data : [UInt8] = [0x00, 0xA4, 0x02, 0x0C, 0x02] + tag
+        let cmd = APDUCommand(bytes:data)!
+        
+        return try await send( cmd: cmd )
+    }
+    
+    private func decodeError( sw1: UInt8, sw2:UInt8 ) -> String {
+
+        let errors : [UInt8 : [UInt8:String]] = [
+            0x62: [0x00:"No information given",
+                   0x81:"Part of returned data may be corrupted",
+                   0x82:"End of file/record reached before reading Le bytes",
+                   0x83:"Selected file invalidated",
+                   0x84:"FCI not formatted according to ISO7816-4 section 5.1.5"],
+            
+            0x63: [0x81:"File filled up by the last write",
+                   0x82:"Card Key not supported",
+                   0x83:"Reader Key not supported",
+                   0x84:"Plain transmission not supported",
+                   0x85:"Secured Transmission not supported",
+                   0x86:"Volatile memory not available",
+                   0x87:"Non Volatile memory not available",
+                   0x88:"Key number not valid",
+                   0x89:"Key length is not correct",
+                   0xC:"Counter provided by X (valued from 0 to 15) (exact meaning depending on the command)"],
+            0x65: [0x00:"No information given",
+                   0x81:"Memory failure"],
+            0x67: [0x00:"Wrong length"],
+            0x68: [0x00:"No information given",
+                   0x81:"Logical channel not supported",
+                   0x82:"Secure messaging not supported",
+                   0x83:"Last command of the chain expected",
+                   0x84:"Command chaining not supported"],
+            0x69: [0x00:"No information given",
+                   0x81:"Command incompatible with file structure",
+                   0x82:"Security status not satisfied",
+                   0x83:"Authentication method blocked",
+                   0x84:"Referenced data invalidated",
+                   0x85:"Conditions of use not satisfied",
+                   0x86:"Command not allowed (no current EF)",
+                   0x87:"Expected SM data objects missing",
+                   0x88:"SM data objects incorrect"],
+            0x6A: [0x00:"No information given",
+                   0x80:"Incorrect parameters in the data field",
+                   0x81:"Function not supported",
+                   0x82:"File not found",
+                   0x83:"Record not found",
+                   0x84:"Not enough memory space in the file",
+                   0x85:"Lc inconsistent with TLV structure",
+                   0x86:"Incorrect parameters P1-P2",
+                   0x87:"Lc inconsistent with P1-P2",
+                   0x88:"Referenced data not found"],
+            0x6B: [0x00:"Wrong parameter(s) P1-P2]"],
+            0x6D: [0x00:"Instruction code not supported or invalid"],
+            0x6E: [0x00:"Class not supported"],
+            0x6F: [0x00:"No precise diagnosis"],
+            0x90: [0x00:"Success"] //No further qualification
+        ]
+        
+        // Special cases - where sw2 isn't an error but contains a value
+        if sw1 == 0x61 {
+            return "SW2 indicates the number of response bytes still available - (\(sw2) bytes still available)"
+        } else if sw1 == 0x64 {
+            return "State of non-volatile memory unchanged (SW2=00, other values are RFU)"
+        } else if sw1 == 0x6C {
+            return "Wrong length Le: SW2 indicates the exact length - (exact length :\(sw2))"
+        }
+
+        if let dict = errors[sw1], let errorMsg = dict[sw2] {
+            return errorMsg
+        }
+        
+        return "Unknown error - sw1: 0x\(binToHexRep(sw1)), sw2 - 0x\(binToHexRep(sw2)) "
+    }
+    
+    func sendMSESetATMutualAuth( oid: String, keyType: UInt8 ) async throws -> ResponseAPDU {
+        
+        let oidBytes = oidToBytes(oid: oid, replaceTag: true)
+        let keyTypeBytes = wrapDO( b: 0x83, arr:[keyType])
+        
+        let data = oidBytes + keyTypeBytes
+            
+        let cmd = APDUCommand(instructionClass: 00, instructionCode: 0x22, p1Parameter: 0xC1, p2Parameter: 0xA4, data: Data(data), expectedResponseLength: -1)
+        
+        return try await send( cmd: cmd )
+    }
+    
+    /// Sends a General Authenticate command.
+    /// This command is the second command that is sent in the "AES" case.
+    /// - Parameter data data to be sent, without the {@code 0x7C} prefix (this method will add it)
+    /// - Parameter lengthExpected the expected length defaults to 256
+    /// - Parameter isLast indicates whether this is the last command in the chain
+    /// - Parameter completed the complete handler - returns the dynamic authentication data without the {@code 0x7C} prefix (this method will remove it) or an error
+    func sendGeneralAuthenticate( data : [UInt8], lengthExpected : Int = 256, isLast: Bool) async throws -> ResponseAPDU {
+
+        let wrappedData = wrapDO(b:0x7C, arr:data)
+        let commandData = Data(wrappedData)
+            
+         // NOTE: Support of Protocol Response Data is CONDITIONAL:
+         // It MUST be provided for version 2 but MUST NOT be provided for version 1.
+         // So, we are expecting 0x7C (= tag), 0x00 (= length) here.
+        
+        // 0x10 is class command chaining
+        let instructionClass : UInt8 = isLast ? 0x00 : 0x10
+        let INS_BSI_GENERAL_AUTHENTICATE : UInt8 = 0x86
+        
+        let cmd : APDUCommand = APDUCommand(instructionClass: instructionClass, instructionCode: INS_BSI_GENERAL_AUTHENTICATE, p1Parameter: 0x00, p2Parameter: 0x00, data: commandData, expectedResponseLength: lengthExpected)
+        var response : ResponseAPDU
+        do {
+            response = try await send( cmd: cmd )
+            response.data = try unwrapDO( tag:0x7c, wrappedData:response.data)
+        } catch {
+            // If wrong length error
+            if case NFCPassportReaderError.ResponseError(_, let sw1, let sw2) = error,
+               sw1 == 0x67, sw2 == 0x00 {
+                
+                // Resend
+                let cmd : APDUCommand = APDUCommand(instructionClass: instructionClass, instructionCode: INS_BSI_GENERAL_AUTHENTICATE, p1Parameter: 0x00, p2Parameter: 0x00, data: commandData, expectedResponseLength: 256)
+                response = try await send( cmd: cmd )
+                response.data = try unwrapDO( tag:0x7c, wrappedData:response.data)
+            } else {
+                throw error
+            }
+        }
+        return response
+    }
+    
+    func selectPassportApplication() async throws -> ResponseAPDU {
+        // Finally reselect the eMRTD application so the rest of the reading works as normal
+        Logger.tagReader.debug( "Re-selecting eMRTD Application" )
+        let cmd : APDUCommand = APDUCommand(instructionClass: 0x00, instructionCode: 0xA4, p1Parameter: 0x04, p2Parameter: 0x0C, data: Data([0xA0, 0x00, 0x00, 0x02, 0x47, 0x10, 0x01]), expectedResponseLength: -1)
+        
+        let response = try await self.send( cmd: cmd)
+        return response
+    }
+    
+    func doBACAuthentication(mrz:String) async throws {
+        self.currentlyReadingDataGroup = nil
+
+        Logger.passportReader.info( "Starting Basic Access Control (BAC)" )
+        
+        self.passport.BACStatus = .failed
+
+        self.bacHandler = BACHandler( pc: self )
+        try await bacHandler?.performBACAndGetSessionKeys( mrzKey: mrz )
+        Logger.passportReader.info( "Basic Access Control (BAC) - SUCCESS!" )
+
+        self.passport.BACStatus = .success
+    }
+    
+    func getChallenge() async throws -> ResponseAPDU{
+        let cmd : APDUCommand = APDUCommand(instructionClass: 00, instructionCode: 0x84, p1Parameter: 0, p2Parameter: 0, data: Data(), expectedResponseLength: 8)
+        
+        return try await send( cmd: cmd )
+    }
+    
+    func doMutualAuthentication( cmdData : Data ) async throws -> ResponseAPDU{
+        let cmd : APDUCommand = APDUCommand(instructionClass: 00, instructionCode: 0x82, p1Parameter: 0, p2Parameter: 0, data: cmdData, expectedResponseLength: 256)
+
+        return try await send( cmd: cmd )
+    }
+    
+    
+    func readDataGroups() async throws {
+        
+        // Read COM
+        var DGsToRead = [DataGroupId]()
+
+//        self.updateReaderSessionMessage( alertMessage: NFCViewDisplayMessage.readingDataGroupProgress(.COM, 0) )
+        
+        if let com = try await readDataGroup(dgId:.COM) as? COM {
+            self.passport.addDataGroup( .COM, dataGroup:com )
+            self.addDatagroupsToRead(com: com, to: &DGsToRead)
+        }
+        
+        if DGsToRead.contains( .DG14 ) {
+            
+            if !skipCA {
+                // If we have been explicitly asked to read DG14 and we will be remove it from the list as we are reading it now.
+                DGsToRead.removeAll { $0 == .DG14 }
+
+                // Do Chip Authentication
+                if let dg14 = try await readDataGroup(dgId:.DG14) as? DataGroup14 {
+                    self.passport.addDataGroup( .DG14, dataGroup:dg14 )
+                    let caHandler = ChipAuthenticationHandler(dg14: dg14, pc:self)
+                     
+                    if caHandler.isChipAuthenticationSupported {
+                        do {
+                            // Do Chip authentication and then continue reading datagroups
+                            try await caHandler.doChipAuthentication()
+                            self.passport.chipAuthenticationStatus = .success
+                        } catch {
+                            Logger.passportReader.info( "Chip Authentication failed - re-establishing BAC")
+                            self.passport.chipAuthenticationStatus = .failed
+                            
+                            // Failed Chip Auth, need to re-establish BAC
+                            try await doBACAuthentication(mrz: mrzKey)
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we are skipping secure elements then remove .DG3 and .DG4
+        if self.skipSecureElements {
+            DGsToRead = DGsToRead.filter { $0 != .DG3 && $0 != .DG4 }
+        }
+
+        if self.readAllDatagroups != true {
+            DGsToRead = DGsToRead.filter { dataGroupsToRead.contains($0) }
+        }
+        for dgId in DGsToRead {
+//            self.updateReaderSessionMessage( alertMessage: NFCViewDisplayMessage.readingDataGroupProgress(dgId, 0) )
+            if let dg = try await readDataGroup(dgId:dgId) {
+                self.passport.addDataGroup( dgId, dataGroup:dg )
+            }
+        }
+    }
+    
+    
+    func readDataGroup(dgId : DataGroupId ) async throws -> DataGroup?  {
+
+        self.currentlyReadingDataGroup = dgId
+        Logger.passportReader.info( "Reading tag - \(dgId.getName())" )
+        var readAttempts = 0
+        var nfcPassportReaderError: NFCPassportReaderError
+        
+//        self.updateReaderSessionMessage( alertMessage: NFCViewDisplayMessage.readingDataGroupProgress(dgId, 0) )
+
+        repeat {
+            do {
+                let response = try await readDataGroupU(dataGroup: dgId)
+                let dg = try DataGroupParser().parseDG(data: response)
+                return dg
+            } catch let error as NFCPassportReaderError {
+                Logger.passportReader.error( "TagError reading tag - \(error)" )
+                nfcPassportReaderError = error
+
+                // OK we had an error - depending on what happened, we may want to try to re-read this
+                // E.g. we failed to read the last Datagroup because its protected and we can't
+                let errMsg = error.value
+                Logger.passportReader.error( "ERROR - \(errMsg)" )
+                var redoBAC = false
+                if errMsg == "Session invalidated" || errMsg == "Class not supported" || errMsg == "Tag connection lost" || errMsg == "Tag response error / no response" {
+                    // Check if we have done Chip Authentication, if so, set it to nil and try to redo BAC
+                    if self.caHandler != nil {
+                        self.caHandler = nil
+                        redoBAC = true
+                    } else {
+                        // Can't go any more!
+                        throw error
+                    }
+                } else if errMsg == "Security status not satisfied" || errMsg == "File not found" {
+                    // Can't read this element as we aren't allowed - remove it and return out so we re-do BAC
+                    self.dataGroupsToRead.removeFirst()
+                    redoBAC = true
+                } else if errMsg == "SM data objects incorrect" || errMsg == "Class not supported" {
+                    // Can't read this element security objects now invalid - and return out so we re-do BAC
+                    redoBAC = true
+                } else if errMsg.hasPrefix( "Wrong length" ) || errMsg.hasPrefix( "End of file" ) {  // Should now handle errors 0x6C xx, and 0x67 0x00
+                    // OK passport can't handle max length so drop it down
+                    self.reduceDataReadingAmount()
+                    redoBAC = true
+                } else if errMsg == "UnsupportedDataGroup" {
+                    // OK, this DataGroup is not supported, lets skip it
+                    Logger.passportReader.debug("Unsupported DataGroup - \(dgId.rawValue)")
+                    return nil
+                }
+                
+                if redoBAC {
+                    // Redo BAC and try again
+                    try await doBACAuthentication(mrz: mrzKey)
+                } else {
+                    // Some other error lets have another try
+                }
+            }
+            readAttempts += 1
+        } while ( readAttempts < 2 )
+
+        // The error will be thrown after n attempts
+        throw nfcPassportReaderError
+    }
+    
+    
+
+    
+    internal func addDatagroupsToRead(com: COM, to DGsToRead: inout [DataGroupId]) {
+        DGsToRead += com.dataGroupsPresent.compactMap { DataGroupId.getIDFromName(name:$0) }
+        DGsToRead.removeAll { $0 == .COM }
+        
+        // SOD should not be present in COM, but just in case we check before adding it so its not read twice
+        if !DGsToRead.contains(.SOD) { DGsToRead.insert(.SOD, at: 0) }
+    }
+    
+    /// The MSE KAT APDU, see EAC 1.11 spec, Section B.1.
+    /// This command is sent in the "DESede" case.
+    /// - Parameter keyData key data object (tag 0x91)
+    /// - Parameter idData key id data object (tag 0x84), can be null
+    /// - Parameter completed the complete handler - returns the success response or an error
+    func sendMSEKAT( keyData : Data, idData: Data? ) async throws -> ResponseAPDU {
+        
+        var data = keyData
+        if let idData = idData {
+            data += idData
+        }
+        
+        let cmd : APDUCommand = APDUCommand(instructionClass: 00, instructionCode: 0x22, p1Parameter: 0x41, p2Parameter: 0xA6, data: data, expectedResponseLength: 256)
+        
+        return try await send( cmd: cmd )
+    }
+    
+    /// The  MSE Set AT for Chip Authentication.
+    /// This command is the first command that is sent in the "AES" case.
+    /// For Chip Authentication. We prefix 0x80 for OID and 0x84 for keyId.
+    ///
+    /// NOTE THIS IS CURRENTLY UNTESTED
+    /// - Parameter oid the OID
+    /// - Parameter keyId the keyId or {@code null}
+    /// - Parameter completed the complete handler - returns the success response or an error
+    func sendMSESetATIntAuth( oid: String, keyId: Int? ) async throws -> ResponseAPDU {
+        
+        let cmd : APDUCommand
+        let oidBytes = oidToBytes(oid: oid, replaceTag: true)
+        
+        if let keyId = keyId, keyId != 0 {
+            let keyIdBytes = wrapDO(b:0x84, arr:intToBytes(val:keyId, removePadding: true))
+            let data = oidBytes + keyIdBytes
+            
+            cmd = APDUCommand(instructionClass: 00, instructionCode: 0x22, p1Parameter: 0x41, p2Parameter: 0xA4, data: Data(data), expectedResponseLength: 256)
+            
+        } else {
+            cmd = APDUCommand(instructionClass: 00, instructionCode: 0x22, p1Parameter: 0x41, p2Parameter: 0xA4, data: Data(oidBytes), expectedResponseLength: 256)
+        }
+        
+        return try await send( cmd: cmd )
+    }
+    
+//    func sendMSESetATMutualAuth( oid: String, keyType: UInt8 ) async throws -> ResponseAPDU {
+//        
+//        let oidBytes = oidToBytes(oid: oid, replaceTag: true)
+//        let keyTypeBytes = wrapDO( b: 0x83, arr:[keyType])
+//        
+//        let data = oidBytes + keyTypeBytes
+//            
+//        let cmd = APDUCommand(instructionClass: 00, instructionCode: 0x22, p1Parameter: 0xC1, p2Parameter: 0xA4, data: Data(data), expectedResponseLength: -1)
+//        
+//        return try await send( cmd: cmd )
+//    }
+    
+    func readDataGroupU( dataGroup: DataGroupId ) async throws -> [UInt8]  {
+        guard let tag = dataGroup.getFileIDTag() else {
+            throw NFCPassportReaderError.UnsupportedDataGroup
+        }
+        
+        return try await selectFileAndRead(tag: tag )
+    }
+    
+    
+    func reduceDataReadingAmount() {
+        if maxDataLengthToRead > 0xA0 {
+            maxDataLengthToRead = 0xA0
+        }
+    }
+    
+    
+//    func doActiveAuthenticationIfNeccessary( tagReader : TagReader) async throws {
+//        guard self.passport.activeAuthenticationSupported else {
+//            return
+//        }
+//        self.updateReaderSessionMessage(alertMessage: NFCViewDisplayMessage.activeAuthentication)
+//
+//        Logger.passportReader.info( "Performing Active Authentication" )
+//
+//        let challenge = aaChallenge ?? generateRandomUInt8Array(8)
+//        Logger.passportReader.debug( "Generated Active Authentication challange - \(binToHexRep(challenge))")
+//        let response = try await tagReader.doInternalAuthentication(challenge: challenge, useExtendedMode: useExtendedMode)
+//        self.passport.verifyActiveAuthentication( challenge:challenge, signature:response.data )
+//    }
+    
+   
+    
+    
+    
+    
+    
 }
             
 
