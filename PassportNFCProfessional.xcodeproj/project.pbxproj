@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,6 +15,7 @@
 		045498952D310C2700FE2522 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498912D310C2700FE2522 /* Utility.swift */; };
 		045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498972D31150500FE2522 /* CryptoTokenKit.framework */; };
 		04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498992D31152700FE2522 /* CryptoKit.framework */; };
+		4FB988102FCD33AB00CD09AB /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = 4FB9880F2FCD33AB00CD09AB /* OpenSSL */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,11 +30,16 @@
 		045498992D31152700FE2522 /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4FB987E12FCD33A100CD09AB /* NFCPassportReader */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NFCPassportReader; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		045498812D310BE300FE2522 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FB988102FCD33AB00CD09AB /* OpenSSL in Frameworks */,
 				04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */,
 				045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */,
 			);
@@ -45,6 +51,7 @@
 		0454987A2D310BE300FE2522 = {
 			isa = PBXGroup;
 			children = (
+				4FB987E12FCD33A100CD09AB /* NFCPassportReader */,
 				045498862D310BE300FE2522 /* PassportNFCProfessional */,
 				045498852D310BE300FE2522 /* Products */,
 				045498962D31150500FE2522 /* Frameworks */,
@@ -108,6 +115,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				4FB987E12FCD33A100CD09AB /* NFCPassportReader */,
+			);
 			name = PassportNFCProfessional;
 			productName = PassportNFCProfessional;
 			productReference = 045498842D310BE300FE2522 /* PassportNFCProfessional.framework */;
@@ -137,6 +147,9 @@
 				Base,
 			);
 			mainGroup = 0454987A2D310BE300FE2522;
+			packageReferences = (
+				4FB9880E2FCD33AB00CD09AB /* XCRemoteSwiftPackageReference "OpenSSL" */,
+			);
 			productRefGroup = 045498852D310BE300FE2522 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -394,6 +407,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4FB9880E2FCD33AB00CD09AB /* XCRemoteSwiftPackageReference "OpenSSL" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/OpenSSL.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.6.2000;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4FB9880F2FCD33AB00CD09AB /* OpenSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4FB9880E2FCD33AB00CD09AB /* XCRemoteSwiftPackageReference "OpenSSL" */;
+			productName = OpenSSL;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0454987B2D310BE300FE2522 /* Project object */;
 }

@@ -75,6 +75,7 @@ public class PassportController
     
     // Properties
     let rmngr:ReaderController
+    let passportReader = PassportReader()
     var isSmartCardInitialized:Bool?
     var isCardSessionBegin:Bool?
     let util:Utility?
@@ -1932,46 +1933,78 @@ public class PassportController
         
         eachProgress = 1.0 / eachProgress
         
-        Task.init{
+        Task {
+            let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
+                switch displayMessage {
+                    case .requestPresentPassport:
+                        return "Hold your iPhone near an NFC enabled passport."
+                    default:
+                        // Return nil for all other messages so we use the provided default
+                        return nil
+                }
+            }
             
-            let isSuccess = await BasicAccessControl(mrz: mrz)
-            progress += eachProgress
-            delegate?.onProgressReadPassportData(progress: progress)
-            
-            if isSuccess {
+            do {
+                let passport = try await passportReader.readPassportAuto( mrzKey: mrz, skipCA: false, skipPACE: false, useExtendedMode: true, customDisplayMessage:customMessageHandler)
                 
-                // in case of checking full year with issue date of document
-                
-                await readDG12()
-                progress += eachProgress
-                delegate?.onProgressReadPassportData(progress: progress)
-                
-                
-                if dg1 {
-                    await readDG1()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                if let _ = passport.faceImageInfo {
+                    print( "Got face Image details")
                 }
                 
-                if dg2 {
-                    await readDG2()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
-                }
-                
-                if dg11 {
-                    await readDG11()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
-                }
-                
+                print(passport.documentType)
+                print(passport.documentNumber)
                 
                 delegate?.onCompleteReadPassportData(data: data!)
-               
-            }
+                
+            } catch {
 
-            rmngr.endCardSession()
+                delegate?.onErrorOccur(errorMessage: error.localizedDescription, isError: true)
+
+            }
         }
+        
+//        Task.init{
+//            
+//            
+//            
+//            let isSuccess = await BasicAccessControl(mrz: mrz)
+//            progress += eachProgress
+//            delegate?.onProgressReadPassportData(progress: progress)
+//            
+//            if isSuccess {
+//                
+//                // in case of checking full year with issue date of document
+//                
+//                await readDG12()
+//                progress += eachProgress
+//                delegate?.onProgressReadPassportData(progress: progress)
+//                
+//                
+//                if dg1 {
+//                    await readDG1()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }
+//                
+//                if dg2 {
+//                    await readDG2()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }
+//                
+//                if dg11 {
+//                    await readDG11()
+//                    progress += eachProgress
+//                    delegate?.onProgressReadPassportData(progress: progress)
+//                }
+//                
+//                
+//                delegate?.onCompleteReadPassportData(data: data!)
+//               
+//            }
+//
+//            rmngr.endCardSession()
+//        }
         
     }
 }
