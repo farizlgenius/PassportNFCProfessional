@@ -25,6 +25,7 @@ public protocol PassportReaderTrackingDelegate: AnyObject {
     func bacFailed()
 }
 
+
 @available(iOS 15, *)
 extension PassportReaderTrackingDelegate {
     func nfcTagDetected() { /* default implementation */ }
@@ -53,6 +54,7 @@ public class PassportReader : NSObject {
     public var skipSecureElements = true
     public var skipCA = false
     public var skipPACE = false
+    public var delegate:PassportControllerDelegate?
     
     // Extended mode is used for reading eMRTD's that support extended length APDUs
     public var useExtendedMode = false
@@ -73,7 +75,7 @@ public class PassportReader : NSObject {
     // the previous OpenSSL CMS verification if necessary
     public var passiveAuthenticationUsesOpenSSL : Bool = false
 
-    public init( masterListURL: URL? = nil ) {
+    public init(masterListURL: URL? = nil ) {
         super.init()
         
         self.masterListURL = masterListURL
@@ -407,7 +409,10 @@ extension PassportReader {
         if self.readAllDatagroups != true {
             DGsToRead = DGsToRead.filter { dataGroupsToRead.contains($0) }
         }
+        AppData.shared.eachProgress = 1.0 / Float(DGsToRead.count);
         for dgId in DGsToRead {
+            AppData.shared.progress += AppData.shared.eachProgress
+            delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
             self.updateReaderSessionMessage( alertMessage: NFCViewDisplayMessage.readingDataGroupProgress(dgId, 0) )
             if let dg = try await readDataGroup(tagReader:tagReader, dgId:dgId) {
                 self.passport.addDataGroup( dgId, dataGroup:dg )

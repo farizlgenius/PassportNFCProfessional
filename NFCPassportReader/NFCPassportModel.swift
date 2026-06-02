@@ -32,17 +32,73 @@ public class NFCPassportModel {
     public private(set) lazy var gender : String = { return passportDataElements?["5F35"] ?? "?" }()
     public private(set) lazy var nationality : String = { return passportDataElements?["5F2C"] ?? "?" }()
     
-    public private(set) lazy var lastName : String = {
-        return names[0].replacingOccurrences(of: "<", with: " " )
-    }()
+//    public private(set) lazy var lastName : String = {
+//        return names[0].replacingOccurrences(of: "<", with: " " )
+//    }()
+//    
+//    public private(set) lazy var firstName : String = {
+//        var name = ""
+//        for i in 1 ..< names.count {
+//            let fn = names[i].replacingOccurrences(of: "<", with: " " ).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+//            name += fn + " "
+//        }
+//        return name.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+//    }()
     
-    public private(set) lazy var firstName : String = {
-        var name = ""
-        for i in 1 ..< names.count {
-            let fn = names[i].replacingOccurrences(of: "<", with: " " ).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            name += fn + " "
+    public private(set) lazy var lastName: String = {
+
+        return names[0]
+
+            .replacingOccurrences(of: "<", with: " ")
+
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+    }()
+
+    public private(set) lazy var firstName: String = {
+
+        guard names.count > 1 else {
+
+            return ""
+
         }
-        return name.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+        return names[1]
+
+            .replacingOccurrences(of: "<", with: " ")
+
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+    }()
+
+    public private(set) lazy var middleName: String = {
+
+        guard names.count > 2 else {
+
+            return ""
+
+        }
+
+        var middle = ""
+
+        for i in 2 ..< names.count {
+
+            let mn = names[i]
+
+                .replacingOccurrences(of: "<", with: " ")
+
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if !mn.isEmpty {
+
+                middle += mn + " "
+
+            }
+
+        }
+
+        return middle.trimmingCharacters(in: .whitespacesAndNewlines)
+
     }()
     
     public private(set) lazy var passportMRZ : String = { return passportDataElements?["5F1F"] ?? "NOT FOUND" }()
@@ -83,10 +139,33 @@ public class NFCPassportModel {
     }()
     
     /// title
-    public private(set) lazy var title : String? = {
+    public private(set) lazy var title: String? = {
+
         if let dg11 = dataGroupsRead[.DG11] as? DataGroup11,
-           let title = dg11.title { return title }
-        return title
+
+           let title = dg11.title {
+
+            return title
+
+        }
+
+        return nil
+
+    }()
+    
+    /// date of issue
+    public private(set) lazy var dateOfIssue: String? = {
+
+        if let dg12 = dataGroupsRead[.DG12] as? DataGroup12,
+
+           let dateOfIssue = dg12.dateOfIssue {
+
+            return dateOfIssue
+
+        }
+
+        return nil
+
     }()
     
     /// face image info

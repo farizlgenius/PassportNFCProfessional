@@ -11,7 +11,7 @@ import CryptoKit
 import CommonCrypto
 import UIKit
 
-public protocol PassportControllerDelegate{
+public protocol PassportControllerDelegate {
     func onProgressReadPassportData(progress:Float)
     func onCompleteReadPassportData(data:PassportModel)
     func onBeginCardSession(isSuccess:Bool)
@@ -80,8 +80,8 @@ public class PassportController
     var isCardSessionBegin:Bool?
     let util:Utility?
     var data:PassportModel?
-    var progress:Float = 0.0
-    var eachProgress:Float = 0.0
+//    var progress:Float = 0.0
+//    var eachProgress:Float = 0.0
     var slotName:String = ""
     var SSCP = ""
     var SKmac = ""
@@ -1693,94 +1693,94 @@ public class PassportController
         Task.init{
             
             let isSuccess = await BasicAccessControl(mrz: mrz)
-            progress += eachProgress
-            delegate?.onProgressReadPassportData(progress: progress)
+            AppData.shared.progress += AppData.shared.eachProgress
+            delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
             
             if isSuccess {
                 
                 let DGTAG:[String] = await readCommon()
-                progress += eachProgress
-                delegate?.onProgressReadPassportData(progress: progress)
+                AppData.shared.progress += AppData.shared.eachProgress
+                delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
                 
                 // Plus for external authen
-                eachProgress += 1.0
+                AppData.shared.eachProgress += 1.0
                 
                 
                 if DGTAG.contains("61") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("75") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("63") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("76") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("65") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("66") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("67") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("68") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("69") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("6A") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("6B") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("6C") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("6D") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("6E") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("6F") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("70") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
                 if DGTAG.contains("77") {
-                    eachProgress += 1.0
+                    AppData.shared.eachProgress += 1.0
                 }
                 
-                eachProgress = 1.0 / eachProgress
+                AppData.shared.eachProgress = 1.0 / AppData.shared.eachProgress
                 
                 if DGTAG.contains("6C") {
                     print("LIB >>>> CHIP SUPPORT DG12")
                     await readDG12()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                    AppData.shared.progress += AppData.shared.eachProgress
+                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
                 }else{
                     print("LIB >>>> CHIP NOT SUPPORT DG12")
                 }
@@ -1788,8 +1788,8 @@ public class PassportController
                 if DGTAG.contains("61") {
                     print("LIB >>>> CHIP SUPPORT DG1")
                     await readDG1()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                    AppData.shared.progress += AppData.shared.eachProgress
+                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
                 }else{
                     print("LIB >>>> CHIP NOT SUPPORT DG1")
                 }
@@ -1797,8 +1797,8 @@ public class PassportController
                 if DGTAG.contains("75") {
                     print("LIB >>>> CHIP SUPPORT DG2")
                     await readDG2()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                    AppData.shared.progress += AppData.shared.eachProgress
+                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
                 }else{
                     print("LIB >>>> CHIP NOT SUPPORT DG2")
                 }
@@ -1831,8 +1831,8 @@ public class PassportController
                 if DGTAG.contains("67") {
                     print("LIB >>>> CHIP SUPPORT DG7")
                     await readDG7()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                    AppData.shared.progress += AppData.shared.eachProgress
+                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
                 }else{
                     print("LIB >>>> CHIP NOT SUPPORT DG7")
                 }
@@ -1858,8 +1858,8 @@ public class PassportController
                 if DGTAG.contains("6B") {
                     print("LIB >>>> CHIP SUPPORT DG11")
                     await readDG11()
-                    progress += eachProgress
-                    delegate?.onProgressReadPassportData(progress: progress)
+                    AppData.shared.progress += AppData.shared.eachProgress
+                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
                 }else{
                     print("LIB >>>> CHIP NOT SUPPORT DG11")
                 }
@@ -1895,7 +1895,8 @@ public class PassportController
                     print("LIB >>>> CHIP NOT SUPPORT SOD")
                 }
                 
-                
+                AppData.shared.progress = 0.0
+                AppData.shared.eachProgress = 0.0
                 delegate?.onCompleteReadPassportData(data: data!)
                
             }
@@ -1907,6 +1908,7 @@ public class PassportController
     
     public func ReadRFIDData(documentNo:String,dob:String,doe:String,dg1:Bool,dg2:Bool,dg11:Bool) {
         
+        passportReader.delegate = self.delegate
         
         //let docnum = documentNo + getChecksum(data: documentNo)
         let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
@@ -1915,23 +1917,23 @@ public class PassportController
         let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
         print(mrz)
         
-        // Plus for external authen
-        eachProgress += 2.0
-        
-        if dg1 {
-            eachProgress += 1.0
-        }
-        
-        if dg2 {
-            eachProgress += 1.0
-        }
-        
-        if dg11 {
-            eachProgress += 1.0
-        }
-        
-        
-        eachProgress = 1.0 / eachProgress
+//        // Plus for external authen
+//        AppData.shared.eachProgress += 2.0
+//        
+//        if dg1 {
+//            AppData.shared.eachProgress += 1.0
+//        }
+//        
+//        if dg2 {
+//            AppData.shared.eachProgress += 1.0
+//        }
+//        
+//        if dg11 {
+//            AppData.shared.eachProgress += 1.0
+//        }
+//        
+//        
+//        AppData.shared.eachProgress = 1.0 / AppData.shared.eachProgress
         
         Task {
             let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
@@ -1945,15 +1947,94 @@ public class PassportController
             }
             
             do {
-                let passport = try await passportReader.readPassportAuto( mrzKey: mrz, skipCA: false, skipPACE: false, useExtendedMode: true, customDisplayMessage:customMessageHandler)
+                let passport = try await passportReader.readPassportAuto( mrzKey: mrz, tags: [.DG1,.DG2,.DG11,.DG12],skipCA: false, skipPACE: false, useExtendedMode: true, customDisplayMessage:customMessageHandler)
                 
                 if let _ = passport.faceImageInfo {
                     print( "Got face Image details")
                 }
                 
-                print(passport.documentType)
-                print(passport.documentNumber)
                 
+                // calculate date of birth reference from ICAO Standard
+                /*
+                 If Birth Date > Current Year = 19
+                 If Birth Date <= Current  Yera = 20
+                 */
+                let currentYear = Calendar(identifier: .gregorian).component(.year, from: Date())
+                if Int(passport.dateOfBirth.prefix(2))! > (currentYear % 100) {
+                    data?.dateOfBirth = "19" + passport.dateOfBirth
+                }else{
+                    data?.dateOfBirth = "20" + passport.dateOfBirth
+                }
+                
+                // calculate date of expire reference from ICAO Standard
+                if let d = passport.dateOfIssue,passport.dateOfIssue != "",let issueYear = Int(d.prefix(4).dropFirst(2)),let exYear = Int(passport.documentExpiryDate.prefix(2)) {
+                    if abs(issueYear - exYear) <= 10  {
+                        data?.dateOfExpiry = "20" + passport.documentExpiryDate
+                    }else{
+                        data?.dateOfExpiry = "19" + passport.documentExpiryDate
+                    }
+                }else{
+                    let exYear = Int(passport.documentExpiryDate.prefix(2))
+                    if exYear! >= 40 {
+                        data?.dateOfExpiry = "19" + passport.documentExpiryDate
+                    }else{
+                        data?.dateOfExpiry = "20" + passport.documentExpiryDate
+                    }
+                }
+                
+                print("Date of expire : ")
+                print(data?.dateOfExpiry ?? "")
+                
+                let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
+                if exp! {
+                    print("Document is expried")
+                    data?.expireFlag = "Y"
+                }else{
+                    print("Document is not expire")
+                    data?.expireFlag = "N"
+                }
+                
+                // DG1
+                data?.documentCode = passport.documentType
+                data?.issueState = ""
+                data?.holderFirstName = passport.firstName
+                data?.holderMiddleName = passport.middleName
+                data?.holderLastName = passport.lastName
+                data?.documentNumber = passport.documentNumber
+                data?.nationality = passport.nationality
+                data?.countryCode = passport.nationality
+                data?.sex = passport.gender
+
+                
+                // DG2
+                if let imageData = passport.passportImage?.jpegData(compressionQuality: 0.8) {
+                        // 2. Encode Data to Base64 String
+                        data?.faceImage = imageData.base64EncodedString()
+         
+                    }
+                
+                // Other
+                if let imageData = passport.signatureImage?.jpegData(compressionQuality: 0.8) {
+                        // 2. Encode Data to Base64 String
+                        data?.signatureImage = imageData.base64EncodedString()
+                
+                    }
+                data?.personalNumber = passport.personalNumber
+                data?.fullDateOfBirth = passport.dateOfBirth
+                data?.placeOfBirth = passport.placeOfBirth
+                data?.permanentAddress = passport.residenceAddress
+                data?.telephone = ""
+                data?.profession = ""
+                data?.title = passport.title
+                
+                data?.issuingAuthority = passport.issuingAuthority
+                data?.dateOfIssue = passport.dateOfIssue
+                data?.endorsements = ""
+                
+                
+//                delegate?.onProgressReadPassportData(progress: 1.0)
+                AppData.shared.eachProgress = 0.0
+                AppData.shared.progress = 0.0
                 delegate?.onCompleteReadPassportData(data: data!)
                 
             } catch {

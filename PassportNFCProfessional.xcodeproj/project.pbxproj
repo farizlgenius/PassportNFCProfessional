@@ -31,6 +31,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		047375282FCEBB12005006C8 /* Global */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Global; sourceTree = "<group>"; };
 		4FB987E12FCD33A100CD09AB /* NFCPassportReader */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NFCPassportReader; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -51,6 +52,7 @@
 		0454987A2D310BE300FE2522 = {
 			isa = PBXGroup;
 			children = (
+				047375282FCEBB12005006C8 /* Global */,
 				4FB987E12FCD33A100CD09AB /* NFCPassportReader */,
 				045498862D310BE300FE2522 /* PassportNFCProfessional */,
 				045498852D310BE300FE2522 /* Products */,
@@ -116,6 +118,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				047375282FCEBB12005006C8 /* Global */,
 				4FB987E12FCD33A100CD09AB /* NFCPassportReader */,
 			);
 			name = PassportNFCProfessional;
@@ -317,7 +320,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = D9CGJCQS39;
+				DEVELOPMENT_TEAM = 55HSZZZYJ8;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -355,7 +358,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = D9CGJCQS39;
+				DEVELOPMENT_TEAM = 55HSZZZYJ8;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
