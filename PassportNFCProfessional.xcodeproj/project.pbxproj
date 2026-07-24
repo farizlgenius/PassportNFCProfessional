@@ -14,6 +14,7 @@
 		045498942D310C2700FE2522 /* PassportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498902D310C2700FE2522 /* PassportController.swift */; };
 		045498952D310C2700FE2522 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 045498912D310C2700FE2522 /* Utility.swift */; };
 		045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498972D31150500FE2522 /* CryptoTokenKit.framework */; };
+		047375E82FD1314A005006C8 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 047375E72FD1314A005006C8 /* CoreNFC.framework */; };
 		04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 045498992D31152700FE2522 /* CryptoKit.framework */; };
 		4FB988102FCD33AB00CD09AB /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = 4FB9880F2FCD33AB00CD09AB /* OpenSSL */; };
 /* End PBXBuildFile section */
@@ -28,6 +29,7 @@
 		045498912D310C2700FE2522 /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		045498972D31150500FE2522 /* CryptoTokenKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoTokenKit.framework; path = System/Library/Frameworks/CryptoTokenKit.framework; sourceTree = SDKROOT; };
 		045498992D31152700FE2522 /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
+		047375E72FD1314A005006C8 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -41,6 +43,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4FB988102FCD33AB00CD09AB /* OpenSSL in Frameworks */,
+				047375E82FD1314A005006C8 /* CoreNFC.framework in Frameworks */,
 				04D0B15B2D559BDC00EE5CF6 /* CryptoKit.framework in Frameworks */,
 				045498982D31150500FE2522 /* CryptoTokenKit.framework in Frameworks */,
 			);
@@ -84,6 +87,7 @@
 		045498962D31150500FE2522 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				047375E72FD1314A005006C8 /* CoreNFC.framework */,
 				045498992D31152700FE2522 /* CryptoKit.framework */,
 				045498972D31150500FE2522 /* CryptoTokenKit.framework */,
 			);

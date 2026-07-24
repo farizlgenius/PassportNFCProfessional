@@ -291,7 +291,7 @@ public class NFCPassportModel {
                         let dgId = DataGroupId.getIDFromName(name:key)
                         self.addDataGroup( dgId, dataGroup:dg )
                     } catch {
-                        Logger.passportReader.error("Failed to import Datagroup - \(key) from dump - \(error)" )
+                        AppLogger.passportReader.error("Failed to import Datagroup - \(key) from dump - \(error)" )
                     }
                 }
             }
@@ -388,9 +388,9 @@ public class NFCPassportModel {
         self.activeAuthenticationChallenge = challenge
         self.activeAuthenticationSignature = signature
         
-        Logger.passportReader.debug( "Active Authentication")
-        Logger.passportReader.debug( "   challange - \(binToHexRep(challenge))")
-        Logger.passportReader.debug( "   signature - \(binToHexRep(signature))")
+        AppLogger.passportReader.debug( "Active Authentication")
+        AppLogger.passportReader.debug( "   challange - \(binToHexRep(challenge))")
+        AppLogger.passportReader.debug( "   signature - \(binToHexRep(signature))")
 
         // Get AA Public key
         self.activeAuthenticationPassed = false
@@ -430,7 +430,7 @@ public class NFCPassportModel {
                         hashType = "SHA224"
                         hashLength = 28  // 224 bits for SHA-224 -> 28 bytes
                     default:
-                        Logger.passportReader.error( "Error identifying Active Authentication RSA message digest hash algorithm" )
+                        AppLogger.passportReader.error( "Error identifying Active Authentication RSA message digest hash algorithm" )
                         return
                 }
                 
@@ -446,12 +446,12 @@ public class NFCPassportModel {
                 // Check hashes match
                 if msgHash == digest {
                     self.activeAuthenticationPassed = true
-                    Logger.passportReader.debug( "Active Authentication (RSA) successful" )
+                    AppLogger.passportReader.debug( "Active Authentication (RSA) successful" )
                 } else {
-                    Logger.passportReader.error( "Error verifying Active Authentication RSA signature - Hash doesn't match" )
+                    AppLogger.passportReader.error( "Error verifying Active Authentication RSA signature - Hash doesn't match" )
                 }
             } catch {
-                Logger.passportReader.error( "Error verifying Active Authentication RSA signature - \(error)" )
+                AppLogger.passportReader.error( "Error verifying Active Authentication RSA signature - \(error)" )
             }
         } else if let ecdsaPublicKey = dg15.ecdsaPublicKey {
             var digestType = ""
@@ -462,9 +462,9 @@ public class NFCPassportModel {
             
             if OpenSSLUtils.verifyECDSASignature( publicKey:ecdsaPublicKey, signature: signature, data: challenge, digestType: digestType ) {
                 self.activeAuthenticationPassed = true
-                Logger.passportReader.debug( "Active Authentication (ECDSA) successful" )
+                AppLogger.passportReader.debug( "Active Authentication (ECDSA) successful" )
             } else {
-                Logger.passportReader.error( "Error verifying Active Authentication ECDSA signature" )
+                AppLogger.passportReader.error( "Error verifying Active Authentication ECDSA signature" )
             }
         }
     }
@@ -506,7 +506,7 @@ public class NFCPassportModel {
             throw error
         }
                 
-        Logger.passportReader.debug( "Passport passed SOD Verification" )
+        AppLogger.passportReader.debug( "Passport passed SOD Verification" )
         self.passportCorrectlySigned = true
 
     }
@@ -558,11 +558,11 @@ public class NFCPassportModel {
         }
         
         if errors != "" {
-            Logger.passportReader.error( "HASH ERRORS - \(errors)" )
+            AppLogger.passportReader.error( "HASH ERRORS - \(errors)" )
             throw PassiveAuthenticationError.InvalidDataGroupHash(errors)
         }
         
-        Logger.passportReader.debug( "Passport passed Datagroup Tampering check" )
+        AppLogger.passportReader.debug( "Passport passed Datagroup Tampering check" )
         passportDataNotTampered = true
     }
     
@@ -618,9 +618,94 @@ public class NFCPassportModel {
             throw PassiveAuthenticationError.UnableToParseSODHashes("Unable to extract hashes" )
         }
 
-        Logger.passportReader.debug( "Parse SOD - Using Algo - \(sodHashAlgo)" )
-        Logger.passportReader.debug( "      - Hashes     - \(sodHashes)" )
+        AppLogger.passportReader.debug( "Parse SOD - Using Algo - \(sodHashAlgo)" )
+        AppLogger.passportReader.debug( "      - Hashes     - \(sodHashes)" )
         
         return (sodHashAlgo, sodHashes)
     }
+}
+
+
+extension NFCPassportModel: CustomStringConvertible {
+
+    public var description: String {
+
+        return """
+
+        ===== Passport =====
+
+        Document Type              : \(documentType)
+
+        Document Sub Type          : \(documentSubType)
+
+        Document Number            : \(documentNumber)
+
+        Issuing Authority          : \(issuingAuthority)
+
+        Last Name                  : \(lastName)
+
+        First Name                 : \(firstName)
+
+        Middle Name                : \(middleName)
+
+        Date Of Birth              : \(dateOfBirth)
+
+        Gender                     : \(gender)
+
+        Nationality                : \(nationality)
+
+        Place Of Birth             : \(placeOfBirth ?? "")
+
+        Residence Address          : \(residenceAddress ?? "")
+
+        Phone Number               : \(phoneNumber ?? "")
+
+        Personal Number            : \(personalNumber ?? "")
+
+        Title                      : \(title ?? "")
+
+        Date Of Issue              : \(dateOfIssue ?? "")
+
+        Expiry Date                : \(documentExpiryDate)
+
+        LDS Version                : \(LDSVersion)
+
+        PACE Supported             : \(isPACESupported)
+
+        Chip Authentication Supported : \(isChipAuthenticationSupported)
+
+        Active Authentication Supported : \(activeAuthenticationSupported)
+
+        BAC Status                 : \(BACStatus)
+
+        PACE Status                : \(PACEStatus)
+
+        Chip Authentication Status : \(chipAuthenticationStatus)
+
+        Passport Correctly Signed  : \(passportCorrectlySigned)
+
+        Document Signing Verified  : \(documentSigningCertificateVerified)
+
+        Passport Data Not Tampered : \(passportDataNotTampered)
+
+        Active Authentication Passed : \(activeAuthenticationPassed)
+
+        Data Groups Present:
+
+        \(dataGroupsPresent.joined(separator: ", "))
+
+        Data Groups Available:
+
+        \(dataGroupsAvailable.map{$0.getName()}.joined(separator: ", "))
+
+        Passport MRZ:
+
+        \(passportMRZ)
+
+        ====================
+
+        """
+
+    }
+
 }

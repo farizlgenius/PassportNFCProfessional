@@ -33,7 +33,7 @@ extension PassportReader {
 
         if NFCTagReaderSession.readingAvailable {
 
-            Logger.passportReader.info(
+            AppLogger.passportReader.info(
                 "Using CoreNFC"
             )
 
@@ -54,7 +54,7 @@ extension PassportReader {
 
         #endif
 
-        Logger.passportReader.info(
+        AppLogger.passportReader.info(
             "CoreNFC unavailable -> using CTK"
         )
         

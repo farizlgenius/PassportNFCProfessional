@@ -114,14 +114,27 @@ public class PassportController
         
     }
     
-    func handleError(description:String){
+    func handleError(description:String) throws {
         print("LIB >>>> \(description)")
-        delegate?.onErrorOccur(errorMessage: description,isError: true)
+        
+        throw NSError(
+
+            domain: "PassportNFCProfessional",
+
+            code: -1,
+
+            userInfo: [
+
+                NSLocalizedDescriptionKey: description
+
+            ]
+
+        )
     }
     // MARK: - END OF HELPER HUNCTION
     
     //MARK: - BASIC ACCESS CONTROL
-    func BasicAccessControl(mrz:String) async -> Bool {
+    func BasicAccessControl(mrz:String) async throws -> Bool {
         
 //        print("""
 //        
@@ -164,7 +177,7 @@ public class PassportController
             if res == "nil" {
                 
 //                print("LIB >>>> SELECT PASSPORT DF UNSUCCESS \(res)")
-                delegate?.onErrorOccur(errorMessage: "SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())", isError:true)
+                  try handleError(description:"SELECT PASSPORT DF UNSUCCESS, RES : \(res.uppercased())")
 //                print("""
 //                
 //                #####################################
@@ -200,7 +213,7 @@ public class PassportController
 //                    #####################################
 //                    
 //                    """)
-                    delegate?.onErrorOccur(errorMessage: "GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())",isError: true)
+                    try handleError(description: "GET CHALLENGE FROM CHIP UNSUCCESS, RES : \(res.uppercased())")
                     rmngr.endCardSession()
                     return false
                 }
@@ -240,7 +253,7 @@ public class PassportController
 //                    #####################################
 //                    
 //                    """)
-                    delegate?.onErrorOccur(errorMessage: "EXTERNAL AUTHENTICATION UNSUCCESS",isError: true)
+                    try handleError(description: "EXTERNAL AUTHENTICATION UNSUCCESS")
                     rmngr.endCardSession()
                     return false
                 }
@@ -281,7 +294,7 @@ public class PassportController
             } // Select DF
             
         }else{
-            delegate?.onErrorOccur(errorMessage: "BEGIN CARD SESSION FAIL && RFID NOT FOUND",isError: false)
+            try handleError(description: "BEGIN CARD SESSION FAIL && RFID NOT FOUND")
 //            print("LIB >>>> BEGIN CARD SESSION FAIL && RFID NOT FOUND")
             rmngr.endCardSession()
             return false
@@ -581,7 +594,7 @@ public class PassportController
     }
     
     // MARK: - EF.COM
-       func readCommon() async -> [String] {
+       func readCommon() async throws -> [String] {
            
 //           print("""
 //           
@@ -635,13 +648,13 @@ public class PassportController
                    return com
                }else{
                    print("LIB >>>> COMPARE RES APDU READ EF.COM FAIL")
-                   delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ EF.COM FAIL",isError: true)
+                   try handleError(description:"COMPARE RES APDU READ EF.COM FAIL")
                    return []
                } // verify res apdu read ef.com
                
            }else{
                print("LIB >>>> COMPARE RES APDU SELECT EF.COM FAIL")
-               delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT EF.COM FAIL",isError: true)
+               try handleError(description:"COMPARE RES APDU SELECT EF.COM FAIL")
                return []
            } // verify res apdu select ef.com
            
@@ -679,7 +692,7 @@ public class PassportController
    
     
     // MARK: - DATA GROUP 1
-    func readDG1() async {
+    func readDG1() async throws {
 
 //        print("""
 //        
@@ -712,7 +725,7 @@ public class PassportController
         // Step 2 : Verify Res Apdu select DG1
         incrementSSCP()
         guard VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: "COMPARE RES APDU SELECT DG1 FAIL")
+            try handleError(description: "COMPARE RES APDU SELECT DG1 FAIL")
             return
         }
         
@@ -725,7 +738,7 @@ public class PassportController
         // Step 4 : Verify Res Apdu get len DG1
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: " COMPARE RES APDU GET LEN DG1 FAIL")
+            try handleError(description: " COMPARE RES APDU GET LEN DG1 FAIL")
             return
         }
         
@@ -743,7 +756,7 @@ public class PassportController
         // Step 7 : Verify RES APDU Read Data DG1
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: "COMPARE RES APDU READ DG1 FAIL")
+            try handleError(description: "COMPARE RES APDU READ DG1 FAIL")
             return
         }
         
@@ -878,7 +891,7 @@ public class PassportController
     }
     
     // MARK: - DATA GROUP 2
-    func readDG2() async {
+    func readDG2() async throws {
         
 //        print("""
 //        
@@ -911,7 +924,7 @@ public class PassportController
         // Step 2 : Verify RES APDU Select DG2
         incrementSSCP()
         guard VerifySelectRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: "COMPARE RES APDU SELECT DG2 FAIL")
+            try handleError(description: "COMPARE RES APDU SELECT DG2 FAIL")
             return
         }
         
@@ -925,7 +938,7 @@ public class PassportController
         // Step 4 : Verify Res APDU Get Len DG2
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: "COMPARE RES APDU GET LEN DG2 FAIL")
+            try handleError(description: "COMPARE RES APDU GET LEN DG2 FAIL")
             return
         }
         
@@ -946,7 +959,7 @@ public class PassportController
         // Step 6 : Verify Res Apdu Read DG2
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: "COMPARE RES APDU READ DG2 FAIL")
+            try handleError(description: "COMPARE RES APDU READ DG2 FAIL")
             return
         }
         
@@ -966,10 +979,11 @@ public class PassportController
             
             incrementSSCP()
             guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-                handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL")
+                try handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 1024 KENGTH FAIL")
                 data?.faceImage = ""
                 return
             }
+            
             
             
             if res.uppercased().suffix(4) == "6700" {
@@ -982,7 +996,7 @@ public class PassportController
                 
                 incrementSSCP()
                 guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-                    handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 512 KENGTH FAIL")
+                    try handleError(description: "COMPARE RES APDU READ DG2 FAIL WITH 512 KENGTH FAIL")
                     data?.faceImage = ""
                     return
                 }
@@ -999,7 +1013,6 @@ public class PassportController
         rr = arr[1]
         let allLen = (UInt32(len[0],radix: 16)! * 2) - 100 //- 1000
 //        print("LIB >>>> DG2 CHARACTER LEN : \(allLen)")
-        
         guard r.count < allLen else {
             //let r2 = r.dropFirst(92)
             if util?.FindIndexOf(inputString: r, target: "0000000C6A502020") != -1 {
@@ -1054,6 +1067,7 @@ public class PassportController
             return
         }
         
+        
 //        print("LIB >>>> DG2 FOUND REMAIN")
         var re:String = ""
         var re2:String = ""
@@ -1068,7 +1082,7 @@ public class PassportController
         // Step 6 : Verify Res Apdu Read DG2
         incrementSSCP()
         guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-            handleError(description: "COMPARE RES APDU READ REMAIN DG2 FAIL")
+            try handleError(description: "COMPARE RES APDU READ REMAIN DG2 FAIL")
             data?.faceImage = ""
             return
         }
@@ -1094,7 +1108,7 @@ public class PassportController
             // Step 8 : Verify Res Apdu Read DG2
             incrementSSCP()
             guard VerifyReadBinaryRAPDU(APDU: res, SSC: SSCP, Key: SKmac) else {
-                handleError(description: "COMPARE RES APDU READ REMAIN DG2 FAIL")
+                try handleError(description: "COMPARE RES APDU READ REMAIN DG2 FAIL")
                 data?.faceImage = ""
                 break
             }
@@ -1253,7 +1267,7 @@ public class PassportController
     // MARK: - Data Group 6
     
     // MARK: - Data Group 7
-    func readDG7() async {
+    func readDG7() async throws {
         
 //        print("""
 //        
@@ -1318,17 +1332,17 @@ public class PassportController
                         
                     }else{
 //                        print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
-                        delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG7 FAIL",isError: true)
+                        try handleError(description:"COMPARE RES APDU READ DG7 FAIL")
                     } // end of verify res apdu read dg3
                     
                     
                 }else{
 //                    print("LIB >>>> COMPARE RES APDU READ DG7 FAIL")
-                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG7 FAIL",isError: true)
+                    try handleError(description:"COMPARE RES APDU READ DG7 FAIL")
                 } // end of verify read dg7
             }else{
 //                print("LIB >>>> COMPARE RES APDU SELECT DG7 FAIL")
-                delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG7 FAIL",isError: true)
+                try handleError(description:"COMPARE RES APDU SELECT DG7 FAIL")
             } // end of verify select dg7
             
         }
@@ -1403,7 +1417,7 @@ public class PassportController
     // MARK: - Data Group 10
     
     // MARK: - Data Group 11
-    func readDG11() async {
+    func readDG11() async throws {
         
 //        print("""
 //        
@@ -1496,11 +1510,11 @@ public class PassportController
                     
                 }else{
 //                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
-                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG11 FAIL",isError: true)
+                    try handleError(description:"COMPARE RES APDU READ DG11 FAIL")
                 } // end of verify read dg11
             }else{
 //                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
-                delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG11 FAIL",isError: true)
+                try handleError(description:"COMPARE RES APDU SELECT DG11 FAIL")
             } // end of verify select dg11
             
         }
@@ -1539,8 +1553,7 @@ public class PassportController
     }
     
     // MARK: - DATA GROUP 12
-    func readDG12() async {
-        
+    func readDG12() async throws {
 //        print("""
 //        
 //        #####################################
@@ -1637,11 +1650,11 @@ public class PassportController
                     
                 }else{
 //                    print("LIB >>>> COMPARE RES APDU READ DG11 FAIL")
-                    delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU READ DG11 FAIL",isError: true)
+                    try handleError(description:"COMPARE RES APDU READ DG11 FAIL")
                 } // end of verify read dg11
             }else{
 //                print("LIB >>>> COMPARE RES APDU SELECT DG11 FAIL")
-                delegate?.onErrorOccur(errorMessage: "COMPARE RES APDU SELECT DG11 FAIL",isError: true)
+                try handleError(description:"COMPARE RES APDU SELECT DG11 FAIL")
             } // end of verify select dg11
             
         }
@@ -1679,261 +1692,13 @@ public class PassportController
 
     
     // MARK: - START READ RFID
-    public func AutoReadRFIDData(documentNo:String,dob:String,doe:String) {
-        
-        
-        //let docnum = documentNo + getChecksum(data: documentNo)
-        let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
-        let birth = dob + getChecksum(data: dob)
-        let exp = doe + getChecksum(data: doe)
-        let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
-        print(mrz)
-        
-        
-        Task.init{
-            
-            let isSuccess = await BasicAccessControl(mrz: mrz)
-            AppData.shared.progress += AppData.shared.eachProgress
-            delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-            
-            if isSuccess {
-                
-                let DGTAG:[String] = await readCommon()
-                AppData.shared.progress += AppData.shared.eachProgress
-                delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-                
-                // Plus for external authen
-                AppData.shared.eachProgress += 1.0
-                
-                
-                if DGTAG.contains("61") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("75") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("63") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("76") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("65") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("66") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("67") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("68") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("69") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("6A") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("6B") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("6C") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("6D") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("6E") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("6F") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("70") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                if DGTAG.contains("77") {
-                    AppData.shared.eachProgress += 1.0
-                }
-                
-                AppData.shared.eachProgress = 1.0 / AppData.shared.eachProgress
-                
-                if DGTAG.contains("6C") {
-                    print("LIB >>>> CHIP SUPPORT DG12")
-                    await readDG12()
-                    AppData.shared.progress += AppData.shared.eachProgress
-                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG12")
-                }
-                
-                if DGTAG.contains("61") {
-                    print("LIB >>>> CHIP SUPPORT DG1")
-                    await readDG1()
-                    AppData.shared.progress += AppData.shared.eachProgress
-                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG1")
-                }
-                
-                if DGTAG.contains("75") {
-                    print("LIB >>>> CHIP SUPPORT DG2")
-                    await readDG2()
-                    AppData.shared.progress += AppData.shared.eachProgress
-                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG2")
-                }
-                
-                
-                if DGTAG.contains("63") {
-                    print("LIB >>>> CHIP SUPPORT DG3")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG3")
-                }
-                
-                if DGTAG.contains("76") {
-                    print("LIB >>>> CHIP SUPPORT DG4")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG4")
-                }
-                
-                if DGTAG.contains("65") {
-                    print("LIB >>>> CHIP SUPPORT DG5")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG5")
-                }
-                
-                if DGTAG.contains("66") {
-                    print("LIB >>>> CHIP SUPPORT DG6")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG6")
-                }
-                
-                if DGTAG.contains("67") {
-                    print("LIB >>>> CHIP SUPPORT DG7")
-                    await readDG7()
-                    AppData.shared.progress += AppData.shared.eachProgress
-                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG7")
-                }
-                
-                if DGTAG.contains("68") {
-                    print("LIB >>>> CHIP SUPPORT DG8")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG8")
-                }
-                
-                if DGTAG.contains("69") {
-                    print("LIB >>>> CHIP SUPPORT DG9")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG9")
-                }
-                
-                if DGTAG.contains("6A") {
-                    print("LIB >>>> CHIP SUPPORT DG10")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG10")
-                }
-                
-                if DGTAG.contains("6B") {
-                    print("LIB >>>> CHIP SUPPORT DG11")
-                    await readDG11()
-                    AppData.shared.progress += AppData.shared.eachProgress
-                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG11")
-                }
-                
-                
-                if DGTAG.contains("6D") {
-                    print("LIB >>>> CHIP SUPPORT DG13")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG13")
-                }
-                
-                if DGTAG.contains("6E") {
-                    print("LIB >>>> CHIP SUPPORT DG14")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG14")
-                }
-                
-                if DGTAG.contains("6F") {
-                    print("LIB >>>> CHIP SUPPORT DG15")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG15")
-                }
-                
-                if DGTAG.contains("70") {
-                    print("LIB >>>> CHIP SUPPORT DG16")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT DG16")
-                }
-                
-                if DGTAG.contains("77") {
-                    print("LIB >>>> CHIP SUPPORT SOD")
-                }else{
-                    print("LIB >>>> CHIP NOT SUPPORT SOD")
-                }
-                
-                AppData.shared.progress = 0.0
-                AppData.shared.eachProgress = 0.0
-                delegate?.onCompleteReadPassportData(data: data!)
-               
-            }
-
-            rmngr.endCardSession()
-        }
-        
-    }
+  
     
-    public func ReadRFIDData(documentNo:String,dob:String,doe:String,dg1:Bool,dg2:Bool,dg11:Bool) {
+    public func ReadRFIDDataNew(mrz:String,dg1:Bool,dg2:Bool,dg11:Bool) {
         
         passportReader.delegate = self.delegate
         
-        //let docnum = documentNo + getChecksum(data: documentNo)
-        let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
-        let birth = dob + getChecksum(data: dob)
-        let exp = doe + getChecksum(data: doe)
-        let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
-        print(mrz)
-        
-//        // Plus for external authen
-//        AppData.shared.eachProgress += 2.0
-//        
-//        if dg1 {
-//            AppData.shared.eachProgress += 1.0
-//        }
-//        
-//        if dg2 {
-//            AppData.shared.eachProgress += 1.0
-//        }
-//        
-//        if dg11 {
-//            AppData.shared.eachProgress += 1.0
-//        }
-//        
-//        
-//        AppData.shared.eachProgress = 1.0 / AppData.shared.eachProgress
+
         
         Task {
             let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
@@ -2031,61 +1796,226 @@ public class PassportController
                 data?.dateOfIssue = passport.dateOfIssue
                 data?.endorsements = ""
                 
-                
-//                delegate?.onProgressReadPassportData(progress: 1.0)
+
                 AppData.shared.eachProgress = 0.0
                 AppData.shared.progress = 0.0
                 delegate?.onCompleteReadPassportData(data: data!)
                 
             } catch {
+                AppData.shared.eachProgress = 0.0
+                AppData.shared.progress = 0.0
+                delegate?.onErrorOccur(errorMessage: error.localizedDescription, isError: true)
+            
+            }
+        }
+        
+        
+    }
+    
+    public func ReadRFIDData(documentNo:String,dob:String,doe:String,dg1:Bool,dg2:Bool,dg11:Bool) {
+        
+        passportReader.delegate = self.delegate
+        
+        //let docnum = documentNo + getChecksum(data: documentNo)
+        let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
+        let birth = dob + getChecksum(data: dob)
+        let exp = doe + getChecksum(data: doe)
+        let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
+        print(mrz)
+            
+            // Plus for external authen
+        AppData.shared.eachProgress += 2.0
+            
+            if dg1 {
+                AppData.shared.eachProgress += 1.0
+            }
+            
+            if dg2 {
+                AppData.shared.eachProgress += 1.0
+            }
+            
+            if dg11 {
+                AppData.shared.eachProgress += 1.0
+            }
+            
+            
+        AppData.shared.eachProgress = 1.0 / AppData.shared.eachProgress
+            
+            Task.init{
+                
+                do{
+                    let isSuccess = try await BasicAccessControl(mrz: mrz)
+                    AppData.shared.progress += AppData.shared.eachProgress
+                    delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
+                    
+                    if isSuccess {
+                        
+                        // in case of checking full year with issue date of document
+                        
+                        try await readDG12()
+                        AppData.shared.progress += AppData.shared.eachProgress
+                        delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
+                        
+                        
+                        if dg1 {
+                            try await readDG1()
+                            AppData.shared.progress += AppData.shared.eachProgress
+                            delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
+                        }
+                        
+                        if dg2 {
+                            try await readDG2()
+                            AppData.shared.progress += AppData.shared.eachProgress
+                            delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
+                        }
+                        
+                        if dg11 {
+                            try await readDG11()
+                            AppData.shared.progress += AppData.shared.eachProgress
+                            delegate?.onProgressReadPassportData(progress: AppData.shared.progress)
+                        }
+                        
+                        AppData.shared.eachProgress = 0.0
+                        AppData.shared.progress = 0.0
+                        delegate?.onCompleteReadPassportData(data: data!)
+                       
+                    }
 
+                    rmngr.endCardSession()
+                }catch{
+                    rmngr.endCardSession()
+                    AppData.shared.eachProgress = 0.0
+                    AppData.shared.progress = 0.0
+                    ReadRFIDDataNew(mrz: mrz, dg1: true, dg2: true, dg11: true)
+                }
+                
+               
+            }
+            
+        }
+    
+    
+    public func ReadRFIDDataNew(documentNo:String,countryCode:String,dob:String,doe:String,dg1:Bool,dg2:Bool,dg11:Bool) {
+        
+        passportReader.delegate = self.delegate
+        
+        //let docnum = documentNo + getChecksum(data: documentNo)
+        let docnum = appendDocNo(docNo:documentNo) + getChecksum(data: documentNo)
+        let birth = dob + getChecksum(data: dob)
+        let exp = doe + getChecksum(data: doe)
+        let mrz = docnum.trimmingCharacters(in: .whitespacesAndNewlines) + birth.trimmingCharacters(in: .whitespacesAndNewlines) + exp.trimmingCharacters(in: .whitespacesAndNewlines)
+        print(mrz)
+        
+        
+        Task {
+            let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
+                switch displayMessage {
+                    case .requestPresentPassport:
+                        return "Hold your iPhone near an NFC enabled passport."
+                    default:
+                        // Return nil for all other messages so we use the provided default
+                        return nil
+                }
+            }
+            
+            do {
+                let passport = try await passportReader.readPassportAuto( mrzKey: mrz, tags: [.DG1,.DG2,.DG11,.DG12],skipCA: false, skipPACE: false, useExtendedMode: true, customDisplayMessage:customMessageHandler)
+                
+                if let _ = passport.faceImageInfo {
+                    print( "Got face Image details")
+                }
+                
+                
+                // calculate date of birth reference from ICAO Standard
+                /*
+                 If Birth Date > Current Year = 19
+                 If Birth Date <= Current  Yera = 20
+                 */
+                let currentYear = Calendar(identifier: .gregorian).component(.year, from: Date())
+                if Int(passport.dateOfBirth.prefix(2))! > (currentYear % 100) {
+                    data?.dateOfBirth = "19" + passport.dateOfBirth
+                }else{
+                    data?.dateOfBirth = "20" + passport.dateOfBirth
+                }
+                
+                // calculate date of expire reference from ICAO Standard
+                if let d = passport.dateOfIssue,passport.dateOfIssue != "",let issueYear = Int(d.prefix(4).dropFirst(2)),let exYear = Int(passport.documentExpiryDate.prefix(2)) {
+                    if abs(issueYear - exYear) <= 10  {
+                        data?.dateOfExpiry = "20" + passport.documentExpiryDate
+                    }else{
+                        data?.dateOfExpiry = "19" + passport.documentExpiryDate
+                    }
+                }else{
+                    let exYear = Int(passport.documentExpiryDate.prefix(2))
+                    if exYear! >= 40 {
+                        data?.dateOfExpiry = "19" + passport.documentExpiryDate
+                    }else{
+                        data?.dateOfExpiry = "20" + passport.documentExpiryDate
+                    }
+                }
+                
+                print("Date of expire : ")
+                print(data?.dateOfExpiry ?? "")
+                
+                let exp = util?.isExpired(expirationDate: (data?.dateOfExpiry)!,format: "yyyyMMdd")
+                if exp! {
+                    print("Document is expried")
+                    data?.expireFlag = "Y"
+                }else{
+                    print("Document is not expire")
+                    data?.expireFlag = "N"
+                }
+                
+                // DG1
+                data?.documentCode = passport.documentType
+                data?.issueState = ""
+                data?.holderFirstName = passport.firstName
+                data?.holderMiddleName = passport.middleName
+                data?.holderLastName = passport.lastName
+                data?.documentNumber = passport.documentNumber
+                data?.nationality = passport.nationality
+                data?.countryCode = passport.nationality
+                data?.sex = passport.gender
+
+                
+                // DG2
+                if let imageData = passport.passportImage?.jpegData(compressionQuality: 0.8) {
+                        // 2. Encode Data to Base64 String
+                        data?.faceImage = imageData.base64EncodedString()
+         
+                    }
+                
+                // Other
+                if let imageData = passport.signatureImage?.jpegData(compressionQuality: 0.8) {
+                        // 2. Encode Data to Base64 String
+                        data?.signatureImage = imageData.base64EncodedString()
+                
+                    }
+                data?.personalNumber = passport.personalNumber
+                data?.fullDateOfBirth = passport.dateOfBirth
+                data?.placeOfBirth = passport.placeOfBirth
+                data?.permanentAddress = passport.residenceAddress
+                data?.telephone = ""
+                data?.profession = ""
+                data?.title = passport.title
+                
+                data?.issuingAuthority = passport.issuingAuthority
+                data?.dateOfIssue = passport.dateOfIssue
+                data?.endorsements = ""
+                
+
+                AppData.shared.eachProgress = 0.0
+                AppData.shared.progress = 0.0
+                delegate?.onCompleteReadPassportData(data: data!)
+                
+            } catch {
+                AppData.shared.eachProgress = 0.0
+                AppData.shared.progress = 0.0
                 delegate?.onErrorOccur(errorMessage: error.localizedDescription, isError: true)
 
             }
         }
         
-//        Task.init{
-//            
-//            
-//            
-//            let isSuccess = await BasicAccessControl(mrz: mrz)
-//            progress += eachProgress
-//            delegate?.onProgressReadPassportData(progress: progress)
-//            
-//            if isSuccess {
-//                
-//                // in case of checking full year with issue date of document
-//                
-//                await readDG12()
-//                progress += eachProgress
-//                delegate?.onProgressReadPassportData(progress: progress)
-//                
-//                
-//                if dg1 {
-//                    await readDG1()
-//                    progress += eachProgress
-//                    delegate?.onProgressReadPassportData(progress: progress)
-//                }
-//                
-//                if dg2 {
-//                    await readDG2()
-//                    progress += eachProgress
-//                    delegate?.onProgressReadPassportData(progress: progress)
-//                }
-//                
-//                if dg11 {
-//                    await readDG11()
-//                    progress += eachProgress
-//                    delegate?.onProgressReadPassportData(progress: progress)
-//                }
-//                
-//                
-//                delegate?.onCompleteReadPassportData(data: data!)
-//               
-//            }
-//
-//            rmngr.endCardSession()
-//        }
         
     }
 }
