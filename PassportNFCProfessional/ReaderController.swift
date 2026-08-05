@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoTokenKit
+import CoreNFC
 
 public protocol ReaderControllerDelegate {
     func onErrorOccur(errorMessage:String,isError:Bool)
@@ -27,6 +28,11 @@ public class ReaderController
     }
     
     public func initSmartCard() async ->Bool{
+        
+        if NFCTagReaderSession.readingAvailable {
+            return true
+        }
+        
         let readerName = getReader()
         slot = await mngr?.getSlot(withName: readerName)
         if slot != nil {
@@ -40,6 +46,13 @@ public class ReaderController
     
     // get reader name
     public func getReader()->String{
+        
+        print("readingAvailable = \(NFCTagReaderSession.readingAvailable)")
+        
+        if NFCTagReaderSession.readingAvailable {
+            return "CoreNFC"
+        }
+        
         if (mngr?.slotNames.count)! > 0 {
             
 //            if isPassport {
@@ -68,6 +81,8 @@ public class ReaderController
             for reader in mngr!.slotNames {
                 if reader == "Feitian R502   " {
                     return "Feitian R502   "
+                }else if reader == "Circle CIR315 Dual" {
+                    return "Circle CIR315 Dual"
                 }
             }
             
